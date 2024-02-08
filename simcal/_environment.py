@@ -11,29 +11,24 @@ class Environment(object):
     :class:`loss.Loss` function is calculated and can be customized using the
     :function:`simulation.Simulator.cleanup()` function.
 
-    :param _owd: the Original Working Directory that will be returned to during cleanup
-    :type _owd: class:`pathlib.Path`
-
-    :param _cwd: the Current Working Directory of this environment
-    :type _cwd: class:`pathlib.Path`
-
-    :param output: an unused variable left to the user to populate.  Provides a convenient way to move simulator output
+    :ivar output: an unused variable left to the user to populate.  Provides a convenient way to move simulator output
     between :function:`simulation.Simulator.run() and :function:`simulation.Simulator.extract()`
     :type output: Any
 
-    :param _stack: the "stack" of temporary objects that need to be cleaned up at cleanup time
-    :type _stack: list[class:`tempfile.TemporaryDirectory` | class:`tempfile.TemporaryFile`]
     """
 
     def __init__(self, cwd: str | os.PathLike | None = None) -> None:
         """Constructor"""
         super().__init__()
+        # the Original Working Directory that will be returned to during cleanup
         if cwd is None:
             self._owd: pathlib.Path = pathlib.Path(os.getcwd())
         else:
             self._owd: pathlib.Path = pathlib.Path(os.fspath(cwd))
         self.output = None
+        # the Current Working Directory of this environment
         self._cwd = self._owd
+        # the "stack" of temporary objects that need to be cleaned up at cleanup time
         self._stack: list[tempfile.TemporaryDirectory | tempfile.TemporaryFile] = list()
 
     def get_owd(self) -> pathlib.Path:
