@@ -9,7 +9,7 @@ class Environment(object):
     created before each :class:`simulation.Simulation` is called.  The environment can be customized using the
     :function:`simulation.Simulator.setup()` function.  The environment won't be cleaned up until after the
     :class:`loss.Loss` function is calculated and can be customized using the
-    :function:`simulation.Simulator.cleanup()` function.
+    :function:`simulation.Simulator.cleanup()` function.  Also handle any remote execution stuff here.
 
     :ivar output: an unused variable left to the user to populate.  Provides a convenient way to move simulator output
     between :function:`simulation.Simulator.run() and :function:`simulation.Simulator.extract()`
