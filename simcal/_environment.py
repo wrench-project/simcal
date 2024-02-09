@@ -11,9 +11,9 @@ class Environment(object):
     :class:`loss.Loss` function is calculated and can be customized using the
     :function:`simulation.Simulator.cleanup()` function.  Also handle any remote execution stuff here.
 
-    :ivar output: an unused variable left to the user to populate.  Provides a convenient way to move simulator output
-    between :function:`simulation.Simulator.run() and :function:`simulation.Simulator.extract()`
-    :type output: Any
+#    :ivar output: an unused variable left to the user to populate.  Provides a convenient way to move simulator output
+#    between :function:`simulation.Simulator.run() and :function:`simulation.Simulator.extract()`
+#    :type output: Any
 
     """
 
@@ -25,7 +25,7 @@ class Environment(object):
             self._owd: pathlib.Path = pathlib.Path(os.getcwd())
         else:
             self._owd: pathlib.Path = pathlib.Path(os.fspath(cwd))
-        self.output = None
+#        self.output = None
         # the Current Working Directory of this environment
         self._cwd = self._owd
         # the "stack" of temporary objects that need to be cleaned up at cleanup time
