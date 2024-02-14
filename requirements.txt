@@ -1,0 +1,4 @@
+setuptools~=58.1.0
+
+
+scikit-learn~=1.4.0 #For Examples: Recomended for its built in loss functions

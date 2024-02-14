@@ -1,3 +1,3 @@
 class Template(object):
-    def fill(self,args):
+    def fill(self, args: any):
         pass

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import simcal as sc
 import os
 import argparse
