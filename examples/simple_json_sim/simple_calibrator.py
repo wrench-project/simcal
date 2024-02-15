@@ -2,10 +2,10 @@
 import simcal as sc
 from groundtruth import ground_truth
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
+import json
 
 
 class ExampleSimulator(sc.Simulator):
-
     def __init__(self, template, time=0):
         self.time = time
         self.template = template
@@ -13,7 +13,7 @@ class ExampleSimulator(sc.Simulator):
     def run(self, env, args):
         env.tmp_dir(dir=".")
         json_file = env.tmp_file(dir=env.getCWD())
-        json_file.write(self.template.fill(args[1], env))
+        json_file.write(json.JSONEncoder().encode(args[1]))
         json_file.flush()
 
         sc.bash("python3 simple_simulator.py", (args[0]) + (json_file.name, self.time))
