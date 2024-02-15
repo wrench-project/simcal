@@ -4,7 +4,8 @@ from collections import defaultdict
 
 def bash(command, args=None, std_in=None):
     pass
-
+#return stdout, stderr, exit code, throw if needed
+#maybe momve to env
 
 def parse_csv(file):
     stats = defaultdict(list)

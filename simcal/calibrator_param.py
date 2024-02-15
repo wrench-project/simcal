@@ -1,6 +1,7 @@
 class CalibratorParam(object):
     def __init__(self):
         self._internal_param = None
+        self.formatter = None
 
     def exponential_range(self, start, end):
         self._internal_param = _ExponentialParam(start, end)
@@ -13,6 +14,9 @@ class CalibratorParam(object):
     def option_set(self, options):
         self._internal_param = _OptionParam(options)
         return self
+
+    def format(self, formatter):
+        self.formatter = formatter
 
 
 class _InternalParam(object):

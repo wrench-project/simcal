@@ -4,20 +4,22 @@ from groundtruth import ground_truth
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 
-
-
-
-
-
 class ExampleSimulator(sc.Simulator):
 
-    def __init__(self, time=0):
+    def __init__(self, template, time=0):
         self.time = time
+        self.template = template
 
     def run(self, env, args):
-        cmdargs = args[0] + args[1]
-        std_out, std_err, exit_code = sc.bash("python3 simple_simulator.py", cmdargs, self.time)
-        return float(std_out.split("\n")[-1])
+        env.tmp_dir(dir=".")
+        json_file = env.tmp_file(dir=env.getCWD())
+        json_file.write(self.template.fill(args[1], env))
+        json_file.flush()
+
+        sc.bash("python3 simple_simulator.py", (args[0]) + (json_file.name, self.time))
+        with open("results.txt", "r") as file:
+            results = file.read()
+        return float(results)
 
 
 class Scenario:
@@ -29,8 +31,8 @@ class Scenario:
         calibration = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
         res = []
         # Run simulator for all known ground truth points
-        for x in self.evaluation_scenarios:
-            res += simulator((x, calibration))
+        for trial in self.evaluation_scenarios:
+            res += simulator((trial, calibration))
         return res
 
 
@@ -58,6 +60,5 @@ calibrator.add_param("a").format("%.2f").linear_range(0, 20)
 calibrator.add_param("b").format("%.2f").linear_range(0, 8)
 calibrator.add_param("c").format("%.2f").linear_range(0, 10)
 calibrator.add_param("d").format("%.2f").linear_range(0, 6)
-
 
 calibrator.calibrate(scenario1, loss, data)
