@@ -24,6 +24,7 @@ class ExampleSimulator(sc.Simulator):
 
 class Scenario:
     def __init__(self, simulator, evaluation_scenarios):
+        super().__init__()
         self.simulator = simulator
         self.evaluation_scenarios = evaluation_scenarios
 
