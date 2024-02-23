@@ -1,6 +1,6 @@
-from simulator import Simulator
+from simcal.simulator import Simulator
 from simcal.calibrators.calibrator import Calibrator
-from utility_functions import *
+import simcal.utility_functions as utility_functions
 import inspect
 utilities = inspect.getmembers(utility_functions, inspect.isfunction)
 __all__ = [
