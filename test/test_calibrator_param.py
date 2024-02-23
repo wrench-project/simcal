@@ -73,12 +73,12 @@ class TestCalibratorParam(TestCase):
 
         self.assertAlmostEqual(a, 8, delta=0.01)
 
-        lambda_param= OrdinalParam(("a", "b", "c", "d", "e"))
+        lambda_param = OrdinalParam(("a", "b", "c", "d", "e"))
         lambda_param.from_normalize_override = lambda this, x: this.options[0] if x < 0.5 \
             else this.options[math.ceil((x - .5) * 5)]
 
         lambda_param.to_normalize_override = lambda this, x: 0 if x == "a" \
-            else this.options.index(x)/5+.4
+            else this.options.index(x) / 5 + .4
 
         lam = lambda_param.from_normalized(0.2)
         self.assertEqual(lam, "a")
@@ -87,4 +87,4 @@ class TestCalibratorParam(TestCase):
         lam = lambda_param.from_normalized(0.8)
         self.assertEqual(lam, "c")
         lam = lambda_param.to_normalized(lam)
-        print(lam)
+        self.assertAlmostEqual(lam, 0.8, delta=.01)
