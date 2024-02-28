@@ -6,6 +6,7 @@ import json
 from collections import defaultdict
 from statistics import mean, stdev, StatisticsError
 
+import csv
 import sys
 import atexit
 
@@ -148,3 +149,14 @@ def evaluate(run, reference):
     if count == 0:
         return float('inf')
     return ret / count
+
+def parse_csv(file):
+    stats = defaultdict(list)
+    with open(file, 'r') as f:
+        reader = csv.DictReader(f)
+        reader.fieldnames = [field.strip() for field in reader.fieldnames]
+        for row in reader:
+            machine = row['machine.name']
+            runtime = float(row['job.end']) - float(row['job.start'])
+            stats[machine].append(runtime)
+    return stats

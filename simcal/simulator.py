@@ -5,17 +5,9 @@ from simcal._environment import Environment
 
 
 class Simulator(object):
-    # def setup(self, env):
-    #    pass # maybe merge with run
 
     def run(self, env, args) -> Any:
         raise NotImplementedError("Simulator.run(self,env,args) must be user defined")
-
-    # def extract(self, env): # Possibly merge with run
-    #    raise NotImplementedError("Simulator.extract(self,env) must be user defined")
-
-    # def cleanup(self, env):
-    #   pass
 
     def __call__(self, args):  # handle async stuff
         env = Environment()

@@ -4,34 +4,40 @@ from simcal._formatted_value import _FormattedValue
 from simcal.utility_functions import safe_exp2
 
 
+# class CalibratorParam(object):
+#     def __init__(self):
+#         self._internal_param = None
+#         self.formatter = None
+#
+#     def exponential_range(self, start, end):
+#         self._internal_param = ExponentialParam(start, end)
+#         return self
+#
+#     def format(self, formatter):
+#         self.formatter = formatter
+#         return self
+#
+#     def linear_range(self, start, end):
+#         self._internal_param = LinearParam(start, end)
+#         return self
+#
+#     def ordinal(self, options):
+#         self._internal_param = OrdinalParam(options)
+#         return self
+#
+#     def categorical(self, categories):
+#         self._internal_param = CategoricalParam(categories)
+#         return self
+#
+#     def custom(self, custom_param):
+#         self._internal_param = custom_param
+#         return self
+#
+#     def getInternal(self):
+#         return self._internal_param
+
 class CalibratorParam(object):
     def __init__(self):
-        self._internal_param = None
-        self.formatter = None
-
-    def exponential_range(self, start, end):
-        self._internal_param = ExponentialParam(start, end)
-        return self
-
-    def format(self, formatter):
-        self.formatter = formatter
-        return self
-
-    def linear_range(self, start, end):
-        self._internal_param = LinearParam(start, end)
-        return self
-
-    def ordinal(self, options):
-        self._internal_param = OrdinalParam(options)
-        return self
-
-    def categorical(self, categories):
-        self._internal_param = CategoricalParam(categories)
-        return self
-
-
-class _InternalParam(object):
-    def __init__(self):
         self.formatter = None
 
     def format(self, formatter):
@@ -39,7 +45,7 @@ class _InternalParam(object):
         return self
 
 
-class OrderedParam(_InternalParam):
+class OrderedParam(CalibratorParam):
     def __init__(self, range_start, range_end, from_normalize_override=None, to_normalize_override=None):
         super().__init__()
         self.range_start = range_start
@@ -129,7 +135,7 @@ class OrdinalParam(OrderedParam):
         return x_normal * (self.range_end - self.range_start) + self.range_start
 
 
-class CategoricalParam(_InternalParam):
+class CategoricalParam(CalibratorParam):
     def __init__(self, categories):
         super().__init__()
         self.categories = categories
