@@ -1,7 +1,7 @@
 import subprocess
 import math
 
-
+# TODO move to env
 def bash(command, args=None, std_in=None):
     cmd_list = [command]
     if args:
