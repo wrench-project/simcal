@@ -1,4 +1,6 @@
 setuptools~=58.1.0
-
+# Python 3.7 min
 
 scikit-learn~=1.4.0 #For Examples: Recomended for its built in loss functions
+
+numpy~=1.26.0

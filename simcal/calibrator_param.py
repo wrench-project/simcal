@@ -122,6 +122,8 @@ class OrdinalParam(OrderedParam):
             return self.from_normalize_override(self, x)
         x_normal = (x - self.range_start) / (self.range_end - self.range_start)
         idx = int(x_normal * len(self.options))
+        if idx >= len(self.options):
+            idx = len(self.options) - 1
         value = self.options[idx]
         if self.formatter:
             return _FormattedValue(self.formatter, value)

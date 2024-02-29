@@ -3,7 +3,14 @@
 		- [X] add param
 		- [ ] document
 	- [ ] grid
-		- [ ] implement
+		- [X] implement timeout based
+			- [ ] debug
+		- [ ] implement step based
+		- [ ] implement itteration based
+		- [ ] implement timeout+step based
+		- [ ] implement timeout+itteration based
+		- [ ] implement iteration + step based
+		- [ ] implement timeout + iteration + step based
 		- [ ] document
 		- [ ] test
 	- [ ] random
@@ -20,7 +27,10 @@
 		- [ ] test
 		
 - [ ] Utilities
-	- [ ] bash function
+	- [X] bash function
+		- [ ] Test on windows
+		- [ ] Test on Mac
+		- [ ] Test on Linux
 	- [ ] tests
 	- [ ] document
 	- [ ] type hints
@@ -47,6 +57,11 @@
 	- [ ] update with api changes
 	- [ ] dcsim example
 	- [ ] rename simple args
+- [ ] Multithreading support
+- [ ] Multi Machine support
+	- [ ] Master Worker?
+	- [ ] Spark/DASK
+	- [ ] Slurm/MPI
 	
 - [ ] handler
 	- [X] deprecate
