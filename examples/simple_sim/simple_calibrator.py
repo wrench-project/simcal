@@ -4,14 +4,10 @@ from groundtruth import ground_truth
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 
-
-
-
-
-
 class ExampleSimulator(sc.Simulator):
 
     def __init__(self, time=0):
+        super().__init__()
         self.time = time
 
     def run(self, env, args):
@@ -54,10 +50,9 @@ scenario1 = Scenario(simulator, evaluation_scenarios)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 calibrator = sc.GridCalibrator()  # tbd
-calibrator.add_param("a").format("%.2f").linear_range(0, 20)
-calibrator.add_param("b").format("%.2f").linear_range(0, 8)
-calibrator.add_param("c").format("%.2f").linear_range(0, 10)
-calibrator.add_param("d").format("%.2f").linear_range(0, 6)
-
+calibrator.add_param("a",sc.parameter.LinearParam(0,20).format("%.2f"))
+calibrator.add_param("b",sc.parameter.LinearParam(0,8).format("%.2f"))
+calibrator.add_param("c",sc.parameter.LinearParam(0,10).format("%.2f"))
+calibrator.add_param("d",sc.parameter.LinearParam(0,6).format("%.2f"))
 
 calibrator.calibrate(scenario1, loss, data)

@@ -1,5 +1,6 @@
 from math import ceil
 
+from simcal import Coordinator
 from simcal.calibrators.calibrator import Calibrator
 from fractions import Fraction
 from itertools import product
@@ -7,13 +8,19 @@ from numpy import linspace
 from time import time
 
 
+def _eval(evaluate_point, calibration):
+    return evaluate_point(calibration), calibration
+
+
 class GridCalibrator(Calibrator):
     def __init__(self):
         super().__init__()
 
     def calibrate(self, evaluate_point, compute_loss, reference_data, step_override=None, iterations=None,
-                  timeout=None):
+                  timeout=None, coordinator=None):
         # TODO handle iteration and steps_override modes
+        if coordinator is None:
+            coordinator = Coordinator()
         best = None
         best_loss = None
         if timeout is not None:
@@ -21,11 +28,13 @@ class GridCalibrator(Calibrator):
             for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
                 if time() > end:
                     break
-                result = evaluate_point(calibration)
-                loss = compute_loss(reference_data, result)
-                if best is None or loss < best_loss:
-                    best = calibration
-                    best_loss = loss
+                coordinator.allocate(_eval, evaluate_point, calibration)
+                results = coordinator.collect()
+                for result, current in results:
+                    loss = compute_loss(reference_data, result)
+                    if best is None or loss < best_loss:
+                        best = current
+                        best_loss = loss
         return best
 
 
@@ -86,5 +95,3 @@ class _RectangularIterator(object):
                 update = [j + 1 / denominator for j in cores[i][:-1]]
                 current_sets[i] = set(update)
                 cores[i] += update
-
-

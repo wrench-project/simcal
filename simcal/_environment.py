@@ -5,6 +5,8 @@ import os
 import tempfile
 from typing import Self
 
+from simcal.utility_functions import bash
+
 
 class Environment(object):
     """
@@ -122,3 +124,8 @@ class Environment(object):
         for tmp in self._stack:
             tmp.cleanup()
         self._stack = list()
+
+# TODO document things under here
+    def bash(self,command, args=None, std_in=None): # TODO account for remote ex
+        os.chdir(self._cwd)
+        return bash(command,args,std_in)

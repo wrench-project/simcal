@@ -46,6 +46,14 @@
 	
 - [ ] environment
 	- [ ] tests
+	- [ ] documentation
+
+- [ ] coordinator
+	- [ ] implement master worker coordinator
+	- [ ] implement mpi coordinator
+	- [ ] implement complex coordinator
+	- [ ] tests
+	- [ ] documentation	
 
 - [ ] formatted value
 	- [ ] tests
