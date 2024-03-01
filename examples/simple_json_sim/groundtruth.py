@@ -9,10 +9,6 @@ from math import sin, log
 from sys import argv
 from time import sleep
 
-x = float(argv[1])
-y = float(argv[2])
-z = float(argv[3])
-w = float(argv[4])
 
 
 def ground_truth(x, y, z, w):
@@ -25,6 +21,11 @@ def ground_truth(x, y, z, w):
 
 
 if __name__ == "__main__":
+    x = float(argv[1])
+    y = float(argv[2])
+    z = float(argv[3])
+    w = float(argv[4])
+
     print(f"f({x}, {y}, {z}, {w})=")
     if len(argv) > 5:
         sleep(float(argv[5]))

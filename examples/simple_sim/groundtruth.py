@@ -9,12 +9,6 @@ from math import sin, log
 from sys import argv
 from time import sleep
 
-x = float(argv[1])
-y = float(argv[2])
-z = float(argv[3])
-w = float(argv[4])
-
-
 def ground_truth(x, y, z, w):
     return (0.1 * (x - 1) * (x - 2) * (x - 3) * (x - 6)
             - 0.01 * (y + 1) * (y - 3) * (y - 4) * (y - 5) * (y - 8) * (y - 5) * (-log(y))
@@ -25,6 +19,10 @@ def ground_truth(x, y, z, w):
 
 
 if __name__ == "__main__":
+    x = float(argv[1])
+    y = float(argv[2])
+    z = float(argv[3])
+    w = float(argv[4])
     print(f"f({x}, {y}, {z}, {w})=")
     if len(argv) > 5:
         sleep(float(argv[5]))
