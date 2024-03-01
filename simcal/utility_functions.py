@@ -4,9 +4,9 @@ import math
 
 def bash(command, args=None, std_in=None):
     cmd_list = [command]
-    if args:
-        cmd_list += args
-
+    for arg in args:
+        cmd_list.append(str(arg))
+    #print(cmd_list)
     process = subprocess.Popen(cmd_list,
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,

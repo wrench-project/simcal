@@ -52,42 +52,54 @@ def _smallest_denominator(decimal):
 
 class _RectangularIterator(object):
     def __init__(self, ordered_params, categorical_params):
-        self._ordered_params_conversion = ordered_params.keys()
-        self._ordered_params = ordered_params.values()
+        self._ordered_params_conversion=[]
+        self._ordered_params=[]
+        for key in ordered_params:
+            self._ordered_params_conversion.append( key)
+            self._ordered_params.append(ordered_params[key])
         categorical_params_list = []
-        # TODO handle empty params cases
-        for key in categorical_params:
-            categories = []
-            for option in categorical_params[key].get_categories():
-                categories.append((key, option))
-            categorical_params_list.append(categories)
-        self._categorical_params = product(*categorical_params_list)
+        #print(categorical_params)
+        if not categorical_params:
+            self._categorical_params = [None]
+        else:
+            for key in categorical_params:
+                categories = []
+                for option in categorical_params[key].get_categories():
+                    categories.append((key, option))
+                categorical_params_list.append(categories)
+            self._categorical_params = product(*categorical_params_list)
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
         denominator = 1
         cores = []  # [[0, 1]...]
         current_sets = []  # [{0, 1}...]
+        if not self._ordered_params:
+            for c in self._categorical_params:  # send off each combination of categorical paramiters for this grid point
+                ret = {}
+                if c is not None:
+                    for param in c:  # repackage categorical params for calibrator
+                        ret[param[0]] = param[1]  # param is a touple (name,value)
+                yield ret
+            return
+
         for param in self._ordered_params:
-            range_size = abs(ceil(param.range_end - param.range_start))
+            range_size = abs(ceil(param.range_end - param.range_start))+1
             seed = linspace(param.range_start, param.range_end, num=range_size)
-            cores.append(seed)
+            cores.append(list(seed))
             current_sets.append(set(seed))
 
         while True:
             for i in sorted(product(*cores), reverse=True, key=_grid_key):
                 for j, cs in zip(i, current_sets):
                     if j in cs:  # prevent repeats by requiring atleast 1 element of the touple to be from the current set of numbers
-                        # print(i)
                         for c in self._categorical_params:  # send off each combination of categorical paramiters for this grid point
                             ret = {}
                             for index, param in enumerate(i):  # repackcage ordered params for calibrator
                                 name = self._ordered_params_conversion[index]
                                 ret[name] = param
-                            for param in c:  # repackage categorical params for calibrator
-                                ret[param[0]] = param[1]  # param is a touple (name,value)
+                            if c is not None:
+                                for param in c:  # repackage categorical params for calibrator
+                                    ret[param[0]] = param[1]  # param is a touple (name,value)
                             yield ret
                         break
             denominator *= 2
@@ -95,3 +107,4 @@ class _RectangularIterator(object):
                 update = [j + 1 / denominator for j in cores[i][:-1]]
                 current_sets[i] = set(update)
                 cores[i] += update
+
