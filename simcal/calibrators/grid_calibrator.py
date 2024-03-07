@@ -52,13 +52,13 @@ def _smallest_denominator(decimal):
 
 class _RectangularIterator(object):
     def __init__(self, ordered_params, categorical_params):
-        self._ordered_params_conversion=[]
-        self._ordered_params=[]
+        self._ordered_params_conversion = []
+        self._ordered_params = []
         for key in ordered_params:
-            self._ordered_params_conversion.append( key)
+            self._ordered_params_conversion.append(key)
             self._ordered_params.append(ordered_params[key])
         categorical_params_list = []
-        #print(categorical_params)
+        # print(categorical_params)
         if not categorical_params:
             self._categorical_params = [None]
         else:
@@ -83,7 +83,7 @@ class _RectangularIterator(object):
             return
 
         for param in self._ordered_params:
-            range_size = abs(ceil(param.range_end - param.range_start))+1
+            range_size = abs(ceil(param.range_end - param.range_start)) + 1
             seed = linspace(param.range_start, param.range_end, num=range_size)
             cores.append(list(seed))
             current_sets.append(set(seed))
@@ -107,4 +107,3 @@ class _RectangularIterator(object):
                 update = [j + 1 / denominator for j in cores[i][:-1]]
                 current_sets[i] = set(update)
                 cores[i] += update
-
