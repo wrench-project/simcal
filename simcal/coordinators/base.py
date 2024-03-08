@@ -5,14 +5,14 @@ from simcal._environment import Environment
 class Base(object):
     def __init__(self):
         super().__init__()
-        self.handlers = []
+        self.handles = []
         self.ready = []
 
     def allocate(self, func, args=None, kwds=None, fail=None):
-        self.handlers.append(func(args, kwds))
+        self.handles.append(func(args, kwds))
 
     def collect(self):
-        return [h for h in self.handlers]
+        return [h for h in self.handles]
 
     def await_result(self):
         return self.collect()

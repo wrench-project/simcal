@@ -19,7 +19,7 @@ class Grid(Base):
     def calibrate(self, evaluate_point, compute_loss, reference_data, step_override=None, iterations=None,
                   timeout=None, coordinator=None):
         # TODO handle iteration and steps_override modes
-        from simcal import Coordinator
+        from simcal.coordinators import Base as Coordinator
         if coordinator is None:
             coordinator = Coordinator()
         best = None

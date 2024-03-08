@@ -16,12 +16,13 @@ class ThreadPool(Base):
 
     def allocate(self, func, args=None, kwds=None, fail=None):
         # not sure how async handles None arguments, hopefully it's fine, otherwise, use () and {}
-        while len(self.handlers) >= self.pool_size:
-            self.pool_full.wait()
+        while len(self.handles) >= self.pool_size:
+            with self.pool_full:
+                self.pool_full.wait()
 
-        handler = self.pool.apply_async(self, func, args, kwds, self._callback, fail)
+        handler = self.pool.apply_async(func, args, kwds, self._callback, fail)
         with self.managementLock:
-            self.handlers.append(handler)
+            self.handles.append(handler)
         return handler
 
     def collect(self):
@@ -35,19 +36,21 @@ class ThreadPool(Base):
 
     def await_result(self):
         while len(self.ready) == 0:
-            self.awaiting_result.wait()
+            with self.awaiting_result:
+                self.awaiting_result.wait()
         return self.collect()
 
     def await_all(self):
-        while len(self.handlers) > 0:
-            self.awaiting_result.wait()
+        while len(self.handles) > 0:
+            with self.awaiting_result:
+                self.awaiting_result.wait()
         return self.collect()
 
     def _callback(self, _):
         with self.managementLock:
-            cache = [handler for handler in self.handlers if self.ready.append(handler)]
+            cache = [handler for handler in self.handles if self.ready.append(handler)]
             for handler in cache:
                 self.ready.append(handler)
-                self.handlers.remove(handler)
+                self.handles.remove(handler)
         self.pool_full.notify()
         self.awaiting_result.notify()

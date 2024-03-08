@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+
+from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
+
 import simcal as sc
 from groundtruth import ground_truth
-from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 
 class ExampleSimulator(sc.Simulator):
@@ -13,6 +15,8 @@ class ExampleSimulator(sc.Simulator):
     def run(self, env, args):
         cmdargs = ["simple_simulator.py"] + list(args[0]) + list(args[1])
         std_out, std_err, exit_code = sc.bash("python3", cmdargs, self.time)
+        if std_err:
+            print(std_out, std_err, exit_code)
         return float(std_out.strip().split("\n")[-1])
 
 
@@ -60,5 +64,5 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you wish
 # To run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration = calibrator.calibrate(scenario1, loss, data, timeout=60)
+calibration = calibrator.calibrate(scenario1, loss, data, timeout=60, coordinator=coordinator)
 print(calibration)
