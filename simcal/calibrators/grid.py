@@ -1,10 +1,11 @@
-from math import ceil
-
-from simcal.calibrators.base import Base
 from fractions import Fraction
 from itertools import product
-from numpy import linspace
+from math import ceil
 from time import time
+
+from numpy import linspace
+
+from simcal.calibrators.base import Base
 
 
 def _eval(evaluate_point, calibration):

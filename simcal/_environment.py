@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pathlib
 import os
+import pathlib
 import tempfile
 from typing import Self
 
@@ -125,7 +125,7 @@ class Environment(object):
             tmp.cleanup()
         self._stack = list()
 
-# TODO document things under here
-    def bash(self,command, args=None, std_in=None): # TODO account for remote ex
+    # TODO document things under here
+    def bash(self, command, args=None, std_in=None):  # TODO account for remote ex
         os.chdir(self._cwd)
-        return bash(command,args,std_in)
+        return bash(command, args, std_in)

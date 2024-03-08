@@ -52,12 +52,12 @@ scenario1 = Scenario(simulator, evaluation_scenarios)
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 calibrator = sc.calibrators.Grid()  # tbd
 
-calibrator.add_param("a", sc.parameters.Linear(0, 20).format("%.2f"))
-calibrator.add_param("b", sc.parameters.Linear(0, 8).format("%.2f"))
-calibrator.add_param("c", sc.parameters.Linear(0, 10).format("%.2f"))
-calibrator.add_param("d", sc.parameters.Linear(0, 6).format("%.2f"))
+calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
+calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
+calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
+calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
-coordinator = sc.ThreadPoolCordinator(pool_size=8)  # Making a coordinator is optional, and only needed if you wish
+coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you wish
 # To run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
 calibration = calibrator.calibrate(scenario1, loss, data, timeout=60)

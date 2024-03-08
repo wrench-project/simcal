@@ -1,12 +1,12 @@
-import subprocess
 import math
+import subprocess
 
 
 def bash(command, args=None, std_in=None):
     cmd_list = [command]
     for arg in args:
         cmd_list.append(str(arg))
-    #print(cmd_list)
+    # print(cmd_list)
     process = subprocess.Popen(cmd_list,
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,

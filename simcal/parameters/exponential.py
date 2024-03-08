@@ -1,7 +1,8 @@
+import math
+
 from simcal.parameters._formatted_value import _FormattedValue
 from simcal.parameters.ordered import Ordered
 from simcal.utility_functions import safe_exp2
-import math
 
 
 class Exponential(Ordered):

@@ -1,3 +1,8 @@
+import multiprocessing
+
+from simcal.coordinators import Base
+
+
 class ThreadPool(Base):
     def __init__(self, pool_size=None):
         super().__init__()

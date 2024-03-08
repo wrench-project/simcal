@@ -1,9 +1,8 @@
 import random
-from math import ceil
+from itertools import count
+from time import time
 
 from simcal.calibrators.base import Base
-from time import time
-from itertools import count
 
 
 def _eval(evaluate_point, calibration):

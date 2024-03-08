@@ -1,5 +1,4 @@
 from simcal._environment import Environment
-import multiprocessing
 
 
 # coordinators will handle things like being Multithreaded, being MPI, etc
@@ -23,4 +22,3 @@ class Base(object):
 
     def env_instance(self):
         return Environment()
-

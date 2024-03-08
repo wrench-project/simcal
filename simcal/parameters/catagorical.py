@@ -1,4 +1,3 @@
-from simcal.parameters._formatted_value import _FormattedValue
 from simcal.parameters.base import Base
 
 
