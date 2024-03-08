@@ -9,6 +9,7 @@ from simcal.calibrators.base import Base
 
 
 def _eval(evaluate_point, calibration):
+    # print(evaluate_point)
     return evaluate_point(calibration), calibration
 
 
@@ -29,7 +30,7 @@ class Grid(Base):
             for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
                 if time() > end:
                     break
-                coordinator.allocate(_eval, evaluate_point, calibration)
+                coordinator.allocate(_eval, (evaluate_point, calibration))
                 results = coordinator.collect()
                 for result, current in results:
                     loss = compute_loss(reference_data, result)

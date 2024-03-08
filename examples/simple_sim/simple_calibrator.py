@@ -31,10 +31,11 @@ class Scenario:
         # Run simulator for all known ground truth points
         print(calibration)
         for x in self.evaluation_scenarios:
-            res.append(simulator((x, unpacked)))
+            res.append(self.simulator((x, unpacked)))
         return res
 
-if __name__ == '__main__':# required if using ThreadPool on Windows or Mac
+
+if __name__ == '__main__':  # required if using ThreadPool on Windows or Mac
     # otherwise a large not useful exception will thrown
 
     # make some fake evaluation scenarios for the example
@@ -63,8 +64,8 @@ if __name__ == '__main__':# required if using ThreadPool on Windows or Mac
     calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
     calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
-    coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you wish
-    # To run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
+    coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
+    # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
     calibration = calibrator.calibrate(scenario1, loss, data, timeout=60, coordinator=coordinator)
     print(calibration)
