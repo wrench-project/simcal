@@ -49,7 +49,7 @@ data = DataLoader("../../DCSIM\ calibration\ Data/individualSlowRawData.json",
                   )
 simulator = Simulator("tools/hitrateScanScript.sh", "../data/platform-files/sgbatch_validation_template.xml",
                       "1.0 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 0.1 0.0")
-calibrator = sc.GridCalibrator()  # tbd
+calibrator = sc.Grid()  # tbd
 calibrator.add_param("cpuSpeed", "flops").exponential_range(20, 40)
 calibrator.add_param("ramdisk", "Bps").exponential_range(20, 40)
 calibrator.add_param("disk", "Bps").exponential_range(20, 40)

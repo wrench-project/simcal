@@ -1,7 +1,7 @@
 import random
 from math import ceil
 
-from simcal.calibrators.calibrator import Calibrator
+from simcal.calibrators.base import Base
 from time import time
 from itertools import count
 
@@ -10,7 +10,7 @@ def _eval(evaluate_point, calibration):
     return evaluate_point(calibration), calibration
 
 
-class RandomCalibrator(Calibrator):
+class Random(Base):
     def __init__(self):
         super().__init__()
 

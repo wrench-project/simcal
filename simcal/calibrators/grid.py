@@ -1,6 +1,6 @@
 from math import ceil
 
-from simcal.calibrators.calibrator import Calibrator
+from simcal.calibrators.base import Base
 from fractions import Fraction
 from itertools import product
 from numpy import linspace
@@ -11,7 +11,7 @@ def _eval(evaluate_point, calibration):
     return evaluate_point(calibration), calibration
 
 
-class GridCalibrator(Calibrator):
+class Grid(Base):
     def __init__(self):
         super().__init__()
 

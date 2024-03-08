@@ -56,7 +56,7 @@ simulator = ExampleSimulator()
 scenario1 = Scenario(simulator, evaluation_scenarios)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
-calibrator = sc.GridCalibrator()  # tbd
+calibrator = sc.Grid()  # tbd
 calibrator.add_param("a").format("%.2f").linear_range(0, 20)
 calibrator.add_param("b").format("%.2f").linear_range(0, 8)
 calibrator.add_param("c").format("%.2f").linear_range(0, 10)

@@ -1,14 +1,18 @@
 from simcal.simulator import Simulator
-from simcal.calibrators.calibrator import Calibrator
-from simcal.calibrators.grid_calibrator import GridCalibrator
-from simcal.coordinator import Coordinator
-import simcal.calibrator_param as parameter
+import simcal.calibrators as calibrators
+import simcal.calibrators as calibrator
+import simcal.coordinators as coordinators
+import simcal.coordinators as coordinator
+import simcal.parameters as parameter
+import simcal.parameters as parameters
 from simcal.utility_functions import bash
 __all__ = [
     "Simulator",
-    "Calibrator",
-    "GridCalibrator",
-    "Coordinator",
+    "calibrator",
+    "calibrators",
+    "coordinator",
+    "coordinators",
     "parameter",
+    "parameters",
     "bash"
 ]

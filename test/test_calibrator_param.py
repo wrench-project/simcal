@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from simcal.calibrator_param import *
+from simcal.parameters.base import *
 
 
 class TestCalibratorParam(TestCase):

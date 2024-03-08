@@ -1,7 +1,7 @@
-from simcal.calibrator_param import OrderedParam
+from simcal.parameters import Ordered
 
 
-class Calibrator(object):
+class Base(object):
     def __init__(self):
         self._ordered_params = {}
         self._categorical_params = {}
@@ -13,7 +13,7 @@ class Calibrator(object):
         # compute_loss(reference_data,result)
 
     def add_param(self, name, parameter):
-        if isinstance(parameter, OrderedParam):
+        if isinstance(parameter, Ordered):
             self._ordered_params[name] = parameter
         else:
             self._categorical_params[name] = parameter
