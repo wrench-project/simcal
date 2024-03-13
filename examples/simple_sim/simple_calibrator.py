@@ -57,7 +57,8 @@ if __name__ == '__main__':  # required if using ThreadPool on Windows or Mac
     scenario1 = Scenario(simulator, evaluation_scenarios)
 
     # prepare the calibrator and setup the arguments to calibrate with their ranges
-    calibrator = sc.calibrators.Grid()  # tbd
+    #calibrator = sc.calibrators.Grid()
+    calibrator = sc.calibrators.Random()
 
     calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
     calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
@@ -67,5 +68,7 @@ if __name__ == '__main__':  # required if using ThreadPool on Windows or Mac
     coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
     # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-    calibration = calibrator.calibrate(scenario1, loss, data, timeout=60, coordinator=coordinator)
+    calibration = calibrator.calibrate(scenario1, loss, data, timeout=600, coordinator=coordinator)
     print(calibration)
+    print("testing calibration")
+    print(loss(data, scenario1(calibration)))

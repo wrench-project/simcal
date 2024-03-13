@@ -9,7 +9,6 @@ from simcal.calibrators.base import Base
 
 
 def _eval(evaluate_point, calibration):
-    # print(evaluate_point)
     return evaluate_point(calibration), calibration
 
 
@@ -17,7 +16,7 @@ class Grid(Base):
     def __init__(self):
         super().__init__()
 
-    def calibrate(self, evaluate_point, compute_loss, reference_data, step_override=None, iterations=None,
+    def calibrate(self, evaluate_point, compute_loss, reference_data, early_stopping_loss=None, step_override=None, iterations=None,
                   timeout=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
@@ -96,16 +95,19 @@ class _RectangularIterator(object):
                     if j in cs:  # prevent repeats by requiring atleast 1 element of the touple to be from the current set of numbers
                         for c in self._categorical_params:  # send off each combination of categorical paramiters for this grid point
                             ret = {}
-                            for index, param in enumerate(i):  # repackcage ordered params for calibrator
+                            for index, value in enumerate(i):  # repackcage ordered params for calibrator
                                 name = self._ordered_params_conversion[index]
-                                ret[name] = param
+                                ret[name] = self._ordered_params[index].from_normalized(value)
                             if c is not None:
                                 for param in c:  # repackage categorical params for calibrator
                                     ret[param[0]] = param[1]  # param is a touple (name,value)
                             yield ret
                         break
+
             denominator *= 2
             for i in range(len(cores)):
                 update = [j + 1 / denominator for j in cores[i][:-1]]
                 current_sets[i] = set(update)
                 cores[i] += update
+                cores[i].sort()
+

@@ -10,13 +10,14 @@ def _eval(evaluate_point, calibration):
 
 
 class Random(Base):
-    def __init__(self):
+    def __init__(self,seed=None):
         super().__init__()
-
-    def calibrate(self, evaluate_point, compute_loss, reference_data, iterations=None,
+        if seed:
+            random.seed(seed)
+    def calibrate(self, evaluate_point, compute_loss, reference_data, early_stopping_loss=None, iterations=None,
                   timeout=None, coordinator=None):
         # TODO handle iteration and steps_override modes
-        from simcal import Coordinator
+        from simcal.coordinators import Base as Coordinator
         if coordinator is None:
             coordinator = Coordinator()
         best = None
@@ -42,7 +43,7 @@ class Random(Base):
             for key in self._categorical_params:
                 calibration[key] = random.choice(self._categorical_params[key].get_categories)
 
-            coordinator.allocate(_eval, evaluate_point, calibration)
+            coordinator.allocate(_eval, (evaluate_point, calibration))
             results = coordinator.collect()
             for result, current in results:
                 loss = compute_loss(reference_data, result)

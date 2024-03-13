@@ -1,4 +1,6 @@
-import multiprocessing
+import concurrent.futures
+import threading
+from multiprocessing import cpu_count
 
 from simcal.coordinators import Base
 
@@ -6,37 +8,31 @@ from simcal.coordinators import Base
 class ThreadPool(Base):
     def __init__(self, pool_size=None):
         super().__init__()
-        self.managementLock = multiprocessing.Lock()
-        self.pool_full = multiprocessing.Condition()
-        self.awaiting_result = multiprocessing.Condition()
+        self.managementLock = threading.Lock()
+        self.pool_full = threading.Condition()
+        self.awaiting_result = threading.Condition()
         if pool_size is None:
-            pool_size = multiprocessing.cpu_count()
-        self.pool = multiprocessing.Pool(processes=pool_size)
+            pool_size = cpu_count()
+        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
         self.pool_size = pool_size
 
-    def allocate(self, func, args=(), kwds=None, fail=None):
-        # not sure how async handles None arguments, hopefully it's fine, otherwise, use () and {}
+    def allocate(self, func, args=(), kwds=None):
         if kwds is None:
             kwds = {}
-        if fail is None:
-            fail = self._fail
         while len(self.handles) >= self.pool_size:
             with self.pool_full:
-                # print("in wait")
                 self.pool_full.wait()
-        # print("cleared wait")
-        # print(func, args, kwds)
-        handle = self.pool.apply_async(func, args=args, kwds=kwds, callback=self._callback, error_callback=self._fail)
+        handle = self.pool.submit(func, *args, **kwds)
+        handle.add_done_callback(self._callback)
         with self.managementLock:
             self.handles.append(handle)
         return handle
 
     def collect(self):
-
         ret = []
         with self.managementLock:
-            for handler in self.ready:
-                ret.append(handler.get())
+            for handle in self.ready:
+                ret.append(handle.result())
             self.ready = []
         return ret
 
@@ -56,12 +52,11 @@ class ThreadPool(Base):
         raise _
 
     def _callback(self, _):
-        print(_)
         with self.managementLock:
-            cache = [handler for handler in self.handles if self.ready.append(handler)]
-            for handler in cache:
-                self.ready.append(handler)
-                self.handles.remove(handler)
+            cache = [handle for handle in self.handles if handle.done()]
+            for handle in cache:
+                self.ready.append(handle)
+                self.handles.remove(handle)
         with self.pool_full:
             self.pool_full.notify()
         with self.awaiting_result:

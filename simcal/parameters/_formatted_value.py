@@ -37,6 +37,15 @@ class _FormattedValue:
         """
         return self._apply_format(self.value)
 
+    def __repr__(self):
+        """
+        Returns the printable representation of the value.
+
+        :return: The formatted string representation.
+        :rtype: str
+        """
+        return str(self)
+
     def __float__(self) -> float:
         """
         Returns the underlying float value.

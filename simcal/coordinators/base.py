@@ -8,7 +8,7 @@ class Base(object):
         self.handles = []
         self.ready = []
 
-    def allocate(self, func, args=None, kwds=None, fail=None):
+    def allocate(self, func, args=None, kwds=None):
         self.handles.append(func(args, kwds))
 
     def collect(self):
