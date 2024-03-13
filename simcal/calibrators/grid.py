@@ -16,7 +16,7 @@ class Grid(Base):
     def __init__(self):
         super().__init__()
 
-    def calibrate(self, evaluate_point, compute_loss, reference_data, early_stopping_loss=None, step_override=None, iterations=None,
+    def calibrate(self, evaluate_point, early_stopping_loss=None, step_override=None, iterations=None,
                   timeout=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
@@ -31,8 +31,7 @@ class Grid(Base):
                     break
                 coordinator.allocate(_eval, (evaluate_point, calibration))
                 results = coordinator.collect()
-                for result, current in results:
-                    loss = compute_loss(reference_data, result)
+                for loss, current in results:
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss

@@ -21,41 +21,43 @@ class ExampleSimulator(sc.Simulator):
 
 
 class Scenario:
-    def __init__(self, simulator, evaluation_scenarios):
+    def __init__(self, simulator, ground_truth, loss):
         self.simulator = simulator
-        self.evaluation_scenarios = evaluation_scenarios
+        self.ground_truth = ground_truth
+        self.loss_function = loss
 
     def __call__(self, calibration):
         unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
         res = []
         # Run simulator for all known ground truth points
         print(calibration)
-        for x in self.evaluation_scenarios:
+        for x in self.ground_truth[0]:
             res.append(self.simulator((x, unpacked)))
-        return res
+        return self.loss_function(res, self.ground_truth[1])
 
 
 # make some fake evaluation scenarios for the example
-evaluation_scenarios = []
+known_points = []
 for x in (1.39904, 254441, 5.05656):
     for y in (1.1558, 3.384, 40395, 7.36):
         for z in (0.637, 2.281, 3.876, 5.459, 7.038):
             for w in (0.448, 1.527, 2.587, 3.641, 4.693, 5.743):
-                evaluation_scenarios.append((x, y, z, w))
+                known_points.append((x, y, z, w))
 
 # get ground truth data the fake scenarios
 data = []
-for x in evaluation_scenarios:
+for x in known_points:
     data.append(ground_truth(*x))
+ground_truth_data = [known_points, data]
 
 loss = sklearn_mean_squared_error
 
 simulator = ExampleSimulator()
-scenario1 = Scenario(simulator, evaluation_scenarios)
+scenario1 = Scenario(simulator, ground_truth_data, loss)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 calibrator = sc.calibrators.Grid()
-#calibrator = sc.calibrators.Random()
+# calibrator = sc.calibrators.Random()
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
@@ -65,7 +67,7 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration = calibrator.calibrate(scenario1, loss, data, timeout=600, coordinator=coordinator)
+calibration = calibrator.calibrate(scenario1, timeout=600, coordinator=coordinator)
 print(calibration)
 print("testing calibration")
-print(loss(data, scenario1(calibration)))
+print(scenario1(calibration))
