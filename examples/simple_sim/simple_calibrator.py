@@ -35,7 +35,7 @@ class Scenario:
         return res
 
 
-    # make some fake evaluation scenarios for the example
+# make some fake evaluation scenarios for the example
 evaluation_scenarios = []
 for x in (1.39904, 254441, 5.05656):
     for y in (1.1558, 3.384, 40395, 7.36):
