@@ -13,11 +13,9 @@ class ExampleSimulator(sc.Simulator):
         self.time = time
 
     def run(self, env, args):
-        for key in args[1]:
-            args[1][key] = str(args[1][key])
         env.tmp_dir(directory=".")
         json_file = env.tmp_file(directory=env.get_cwd(), encoding='utf8')
-        json.dump(args[1], json_file)
+        json.dump(args[1], json_file,default=lambda o: str(o))
         json_file.flush()
 
         cmdargs = [env.get_owd()/"simple_simulator.py"] + [json_file.name] + list(args[0])
@@ -76,7 +74,7 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration = calibrator.calibrate(scenario1, timeout=600, coordinator=coordinator)
+calibration = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
 print(calibration)
 print("testing calibration")
 print(scenario1(calibration))

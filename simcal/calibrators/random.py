@@ -15,17 +15,17 @@ class Random(Base):
         if seed:
             random.seed(seed)
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
-                  timeout=None, coordinator=None):
+                  timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
         if coordinator is None:
             coordinator = Coordinator()
         best = None
         best_loss = None
-        if timeout is None:
+        if timelimit is None:
             end = float('inf')
         else:
-            end = time() + timeout
+            end = time() + timelimit
         if iterations is None:
             itr = count(start=0, step=1)
         else:

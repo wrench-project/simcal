@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
@@ -7,17 +8,19 @@ from groundtruth import ground_truth
 
 
 class ExampleSimulator(sc.Simulator):
-
     def __init__(self, time=0):
         super().__init__()
         self.time = time
 
     def run(self, env, args):
-        cmdargs = ["simple_simulator.py"] + list(args[0]) + list(args[1])
-        std_out, std_err, exit_code = sc.bash("python3", cmdargs, self.time)
+        cmdargs = [env.get_owd() / "simple_simulator.py"] + [args[1]] + list(args[0])
+        std_out, std_err, exit_code = env.bash("python3", cmdargs, self.time)
         if std_err:
             print(std_out, std_err, exit_code)
-        return float(std_out.strip().split("\n")[-1])
+
+        with env.open("results.txt", "r") as file:
+            results = file.read()
+        return float(results)
 
 
 class Scenario:
@@ -27,13 +30,19 @@ class Scenario:
         self.loss_function = loss
 
     def __call__(self, calibration):
-        unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
         res = []
+        env = sc.Environment()
+        env.tmp_dir(directory=".")
+        json_file = env.tmp_file(directory=env.get_cwd(), encoding='utf8')
+        json.dump(calibration, json_file, default=lambda o: str(o))
+        json_file.flush()
         # Run simulator for all known ground truth points
         print(calibration)
         for x in self.ground_truth[0]:
-            res.append(self.simulator((x, unpacked)))
-        return self.loss_function(res, self.ground_truth[1])
+            res.append(self.simulator((x, json_file.name), env=env))
+        ret = self.loss_function(res, self.ground_truth[1])
+        env.cleanup()
+        return ret
 
 
 # make some fake evaluation scenarios for the example
