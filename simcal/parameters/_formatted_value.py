@@ -1,9 +1,10 @@
 from __future__ import annotations
+import json
 
 from copy import copy
 
 
-class _FormattedValue:
+class _FormattedValue(json.JSONEncoder):
     """
     Represents a value with a specific format for string representation.
     """
@@ -15,6 +16,7 @@ class _FormattedValue:
         :param str formatter: The format string used for string representation.
         :param int | float value: The numeric value.
         """
+        super().__init__()
         self.formatter = formatter
         self.value = value
 
@@ -38,6 +40,15 @@ class _FormattedValue:
         return self._apply_format(self.value)
 
     def __repr__(self):
+        """
+        Returns the printable representation of the value.
+
+        :return: The formatted string representation.
+        :rtype: str
+        """
+        return str(self)
+
+    def __json__(self):
         """
         Returns the printable representation of the value.
 

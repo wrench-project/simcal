@@ -14,13 +14,16 @@ class Simulator(object):
     def run(self, env, args) -> Any:
         raise NotImplementedError("Simulator.run(self,env,args) must be user defined")
 
-    def __call__(self, args, env=None):  # handle async stuff
+    def __call__(self, args, env: Environment | None = None):  # handle async stuff
         if env is None:
-            env = Environment()
+            environment = Environment()
+        else:
+            environment = env
         # self.setup(env)
-        ret = self.run(env, args)
+        ret = self.run(environment, args)
         # handler = Handler(self, env)
         # ret=self.extract(env)
         # self.cleanup(env)
-        env.cleanup()
+        if env is None:
+            environment.cleanup()
         return ret

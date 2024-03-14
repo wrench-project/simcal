@@ -2,7 +2,7 @@ import math
 import subprocess
 
 
-def bash(command, args=None, std_in=None):
+def bash(command, args=None, std_in=None, cwd=None):
     cmd_list = [command]
     for arg in args:
         cmd_list.append(str(arg))
@@ -11,7 +11,8 @@ def bash(command, args=None, std_in=None):
                                stdin=subprocess.PIPE,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
-                               text=True)
+                               text=True,
+                               cwd=cwd)
 
     if std_in is not None:
         stdout, stderr = process.communicate(input=std_in)

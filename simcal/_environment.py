@@ -34,7 +34,9 @@ class Environment(object):
         # the Current Working Directory of this environment
         self._cwd = self._owd
         # the "stack" of temporary objects that need to be cleaned up at cleanup time
-        self._stack: list[tempfile.TemporaryDirectory | tempfile.TemporaryFile] = list()
+        self._dir_stack: list[tempfile.TemporaryDirectory] = list()
+        self._file_stack: list[tempfile.TemporaryFile] = list()
+
         self._use_cwd = os.PathLike is not None
 
     def use_cwd(self) -> Self:
@@ -63,21 +65,16 @@ class Environment(object):
         :rtype: pathlib.Path"""
         return self._cwd
 
-    def cd(self, path: str | os.PathLike | None = None) -> Self:
-        """Changes the current Directory for this Environment.  If no path given, resets it to cwd.
+    def cd(self, path: str | os.PathLike) -> Self:
+        """Changes the current Directory for this Environment.
 
-        :param path: the path to change to.  If None, cwd is used
+        :param path: the path to change to.
         :type path: class:`os.PathLike`
 
         :return: Self
         :rtype: Self
         """
-        if path is None:
-            os.chdir(self._cwd)
-        else:
-            path = pathlib.Path(path).absolute()
-            self._cwd = path
-            os.chdir(path)
+        self._cwd = self.path(path)
         return self
 
     def tmp_dir(self, directory: str | os.PathLike | None = None, keep: bool = False) -> pathlib.Path:
@@ -94,38 +91,60 @@ class Environment(object):
         if self._use_cwd and directory is None:
             directory = self._cwd
         path = tempfile.TemporaryDirectory(ignore_cleanup_errors=True, dir=directory, delete=keep)
-        if keep:
-            self._stack.append(path)
+        if not keep:
+            self._dir_stack.append(path)
         self.cd(path.name)
         return self._cwd
 
-    def tmp_file(self, directory: str | os.PathLike | None = None, keep: bool = False) -> tempfile.NamedTemporaryFile:
+    def tmp_file(self, directory: str | os.PathLike | None = None, keep: bool = False, encoding: str | None = None,
+                 mode: str = 'w') -> tempfile.NamedTemporaryFile:
         """Creates a unique temporary file for the simulator to use.
 
         :param directory: directory to use as parent.  If `None`, the system temp directory is used
         :type directory: str | os.PathLike | None
 
-        :param keep: Optional parameter to keep the unique directory instead of deleting it.  Defaults to false.
+        :param keep: Optional parameter to keep the temporary file instead of deleting it.  Defaults to false.
         :type keep: bool
+
+        :param encoding: Optional parameter to specify the file encoding.
+        :type encoding: str | None
+
+        :param mode: Optional parameter to specify the mode to open, defaults to 'w'
+        :type mode: str
 
         :return: The Filelike object that points to the new file
         :rtype: tempfile.NamedTemporaryFile"""
         if self._use_cwd and directory is None:
             directory = self._cwd
-        path = tempfile.NamedTemporaryFile(delete_on_close=False, dir=directory, delete=keep)
-        if keep:
-            self._stack.append(path)
+        path = tempfile.NamedTemporaryFile(delete_on_close=False, dir=directory, delete=keep, encoding=encoding,
+                                           mode=mode)
+        if not keep:
+            self._file_stack.append(path)
         return path
 
     def cleanup(self) -> None:
         """Cleanup the environment by deleting any temporary files or folders that need to and returning to the
         Original Working Directory"""
-        os.chdir(self._owd)
-        for tmp in self._stack:
+        # os.chdir(self._owd)
+        for tmp in self._file_stack:
+            tmp.close()
+        self._file_stack = list()
+
+        for tmp in self._dir_stack:
             tmp.cleanup()
-        self._stack = list()
+        self._dir_stack = list()
 
     # TODO document things under here
     def bash(self, command, args=None, std_in=None):  # TODO account for remote ex
-        os.chdir(self._cwd)
-        return bash(command, args, std_in)
+        # os.chdir(self._cwd)
+        return bash(command, args, std_in, cwd=self._cwd)
+
+    def open(self, file, *args, **kwargs):
+        return open(self.path(file), *args, **kwargs)
+
+    def path(self, path: str | os.PathLike) -> pathlib.Path:
+        if os.path.isabs(path):
+            path = pathlib.Path(path)
+        else:
+            path = pathlib.Path(self._cwd / path).resolve()
+        return path

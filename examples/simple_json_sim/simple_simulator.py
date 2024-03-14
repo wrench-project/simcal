@@ -4,6 +4,8 @@ simple_simulator is a 4 dimensional space to fit to the 4 dimensional function i
 The correct calibration should be 10,4,5,3
 good ranges are a(0,20), b (0,8) ,c(0,10) and d(0,6)
 there is an optional 9th parameter if you want to add an artificial delay to the simulation
+Usage: ./simple_simulator.py [path to json] [x] [y] [z] [w]
+Json file: {"a":[a],"b":[b],"c":[c],"d":[d]}
 """
 
 from math import sin, log
@@ -11,17 +13,17 @@ from sys import argv
 from time import sleep
 import json
 with open(argv[1]) as json_data:
-    jdata = json.loads(json_data)
+    jdata = json.loads(json_data.read())
     json_data.close()
 x = float(argv[2])
 y = float(argv[3])
 z = float(argv[4])
 w = float(argv[5])
 
-a = jdata["a"]
-b = jdata["b"]
-c = jdata["c"]
-d = jdata["d"]
+a = float(jdata["a"])
+b = float(jdata["b"])
+c = float(jdata["c"])
+d = float(jdata["d"])
 print(f"""f(x,y,z,w)=
     {a / 100} * (x - {(b / 4)}) * (x - {c / 5 * 2}) * (x - {d}) * (x - {a / 10 * 6})
     - {(b / 400)} * (y + {c / 5}) * (y - {d}) * (y - {b}) * (y - {(a / 2)}) * (y - {(a / 2)}) * (y - {(b * 2)})  * (-log(y))
@@ -30,8 +32,8 @@ print(f"""f(x,y,z,w)=
     + {a * 2}
     """
       )
-if len(argv) > 5:
-    sleep(float(argv[9]))
+if len(argv) > 6:
+    sleep(float(argv[6]))
 with open("results.txt", "w") as file:
     file.write(str(
         a / 100 * (x - (b / 4)) * (x - c / 5 * 2) * (x - d) * (x - a / 10 * 6)

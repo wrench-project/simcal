@@ -1,65 +1,82 @@
 #!/usr/bin/env python3
+import json
+
+from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
+
 import simcal as sc
 from groundtruth import ground_truth
-from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
-import json
 
 
 class ExampleSimulator(sc.Simulator):
-    def __init__(self, template, time=0):
+    def __init__(self, time=0):
+        super().__init__()
         self.time = time
-        self.template = template
 
     def run(self, env, args):
-        env.tmp_dir(dir=".")
-        json_file = env.tmp_file(dir=env.getCWD())
-        json_file.write(json.JSONEncoder().encode(args[1]))
+        for key in args[1]:
+            args[1][key] = str(args[1][key])
+        env.tmp_dir(directory=".")
+        json_file = env.tmp_file(directory=env.get_cwd(), encoding='utf8')
+        json.dump(args[1], json_file)
         json_file.flush()
 
-        sc.bash("python3 simple_simulator.py", (args[0]) + (json_file.name, self.time))
-        with open("results.txt", "r") as file:
+        cmdargs = [env.get_owd()/"simple_simulator.py"] + [json_file.name] + list(args[0])
+        std_out, std_err, exit_code = env.bash("python3", cmdargs, self.time)
+        if std_err:
+            print(std_out, std_err, exit_code)
+
+        with env.open("results.txt", "r") as file:
             results = file.read()
         return float(results)
 
 
 class Scenario:
-    def __init__(self, simulator, evaluation_scenarios):
-        super().__init__()
+    def __init__(self, simulator, ground_truth, loss):
         self.simulator = simulator
-        self.evaluation_scenarios = evaluation_scenarios
+        self.ground_truth = ground_truth
+        self.loss_function = loss
 
     def __call__(self, calibration):
-        calibration = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
         res = []
         # Run simulator for all known ground truth points
-        for trial in self.evaluation_scenarios:
-            res += simulator((trial, calibration))
-        return res
+        print(calibration)
+        for x in self.ground_truth[0]:
+            res.append(self.simulator((x, calibration)))
+        return self.loss_function(res, self.ground_truth[1])
 
 
 # make some fake evaluation scenarios for the example
-evaluation_scenarios = []
+known_points = []
 for x in (1.39904, 254441, 5.05656):
     for y in (1.1558, 3.384, 40395, 7.36):
         for z in (0.637, 2.281, 3.876, 5.459, 7.038):
             for w in (0.448, 1.527, 2.587, 3.641, 4.693, 5.743):
-                evaluation_scenarios += (x, y, z, w)
+                known_points.append((x, y, z, w))
 
 # get ground truth data the fake scenarios
 data = []
-for x in evaluation_scenarios:
-    data += ground_truth(*x)
+for x in known_points:
+    data.append(ground_truth(*x))
+ground_truth_data = [known_points, data]
 
 loss = sklearn_mean_squared_error
 
 simulator = ExampleSimulator()
-scenario1 = Scenario(simulator, evaluation_scenarios)
+scenario1 = Scenario(simulator, ground_truth_data, loss)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
-calibrator = sc.Grid()  # tbd
-calibrator.add_param("a").format("%.2f").linear_range(0, 20)
-calibrator.add_param("b").format("%.2f").linear_range(0, 8)
-calibrator.add_param("c").format("%.2f").linear_range(0, 10)
-calibrator.add_param("d").format("%.2f").linear_range(0, 6)
+calibrator = sc.calibrators.Grid()
+# calibrator = sc.calibrators.Random()
 
-calibrator.calibrate(scenario1, loss, data)
+calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
+calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
+calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
+calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
+
+coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
+# wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
+
+calibration = calibrator.calibrate(scenario1, timeout=600, coordinator=coordinator)
+print(calibration)
+print("testing calibration")
+print(scenario1(calibration))
