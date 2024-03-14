@@ -15,7 +15,10 @@ class ThreadPool(Base):
             pool_size = cpu_count()
         self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
         self.pool_size = pool_size
-        #TODO make threading alarm thing based on timelimit
+        if timelimit:
+            self._timer = threading.Timer(timelimit, self._timeout)
+            self._timer.start()
+        # TODO make threading alarm thing based on timelimit
 
     def allocate(self, func, args=(), kwds=None):
         if kwds is None:
@@ -58,6 +61,17 @@ class ThreadPool(Base):
             for handle in cache:
                 self.ready.append(handle)
                 self.handles.remove(handle)
+        with self.pool_full:
+            self.pool_full.notify()
+        with self.awaiting_result:
+            self.awaiting_result.notify()
+
+    def _timeout(self):
+        self._callback(None)
+        with self.managementLock:
+            for handle in self.handles:
+                handle.cancel()
+            self.handles = []
         with self.pool_full:
             self.pool_full.notify()
         with self.awaiting_result:
