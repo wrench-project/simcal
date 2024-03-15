@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import json
+import os
 
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 import simcal as sc
 from groundtruth import ground_truth
+
+simple_json_sim = os.path.dirname(os.path.realpath(__file__))
 
 
 class ExampleSimulator(sc.Simulator):
@@ -15,10 +18,10 @@ class ExampleSimulator(sc.Simulator):
     def run(self, env, args):
         env.tmp_dir(directory=".")
         json_file = env.tmp_file(directory=env.get_cwd(), encoding='utf8')
-        json.dump(args[1], json_file,default=lambda o: str(o))
+        json.dump(args[1], json_file, default=lambda o: str(o))
         json_file.flush()
 
-        cmdargs = [env.get_owd()/"simple_simulator.py"] + [json_file.name] + list(args[0]) + [self.time]
+        cmdargs = [simple_json_sim / "simple_simulator.py"] + [json_file.name] + list(args[0]) + [self.time]
         std_out, std_err, exit_code = env.bash("python3", cmdargs)
         if std_err:
             print(std_out, std_err, exit_code)

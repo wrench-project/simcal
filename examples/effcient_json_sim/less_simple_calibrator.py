@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import json
+import os
 
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 import simcal as sc
 from groundtruth import ground_truth
+
+efficient_json_sim = os.path.dirname(os.path.realpath(__file__))  # Get path to THIS folder where the simulator lives
 
 
 class ExampleSimulator(sc.Simulator):
@@ -13,7 +16,7 @@ class ExampleSimulator(sc.Simulator):
         self.time = time
 
     def run(self, env, args):
-        cmdargs = [env.get_owd() / "simple_simulator.py"] + [args[1]] + list(args[0]) + [self.time]
+        cmdargs = [efficient_json_sim / "simple_simulator.py"] + [args[1]] + list(args[0]) + [self.time]
         std_out, std_err, exit_code = env.bash("python3", cmdargs)
         if std_err:
             print(std_out, std_err, exit_code)
