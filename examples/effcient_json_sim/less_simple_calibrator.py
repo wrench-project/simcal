@@ -13,8 +13,8 @@ class ExampleSimulator(sc.Simulator):
         self.time = time
 
     def run(self, env, args):
-        cmdargs = [env.get_owd() / "simple_simulator.py"] + [args[1]] + list(args[0])
-        std_out, std_err, exit_code = env.bash("python3", cmdargs, self.time)
+        cmdargs = [env.get_owd() / "simple_simulator.py"] + [args[1]] + list(args[0]) + [self.time]
+        std_out, std_err, exit_code = env.bash("python3", cmdargs)
         if std_err:
             print(std_out, std_err, exit_code)
 

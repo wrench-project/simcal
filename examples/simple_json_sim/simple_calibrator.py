@@ -18,8 +18,8 @@ class ExampleSimulator(sc.Simulator):
         json.dump(args[1], json_file,default=lambda o: str(o))
         json_file.flush()
 
-        cmdargs = [env.get_owd()/"simple_simulator.py"] + [json_file.name] + list(args[0])
-        std_out, std_err, exit_code = env.bash("python3", cmdargs, self.time)
+        cmdargs = [env.get_owd()/"simple_simulator.py"] + [json_file.name] + list(args[0]) + [self.time]
+        std_out, std_err, exit_code = env.bash("python3", cmdargs)
         if std_err:
             print(std_out, std_err, exit_code)
 
