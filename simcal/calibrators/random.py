@@ -50,4 +50,4 @@ class Random(Base):
                     best = current
                     best_loss = loss
 
-        return best
+        return best, best_loss

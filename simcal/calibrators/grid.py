@@ -35,7 +35,7 @@ class Grid(Base):
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
-        return best
+        return best, best_loss
 
 
 def _grid_key(a):
