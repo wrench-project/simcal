@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 import json
 import os
+from pathlib import Path
 
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 import simcal as sc
 from groundtruth import ground_truth
 
-efficient_json_sim = os.path.dirname(os.path.realpath(__file__))  # Get path to THIS folder where the simulator lives
+efficient_json_sim = Path(os.path.dirname(os.path.realpath(__file__)))  # Get path to THIS folder where the simulator lives
 
 
 class ExampleSimulator(sc.Simulator):

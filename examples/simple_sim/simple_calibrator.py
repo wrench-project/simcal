@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+from pathlib import Path
 from time import time
 
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
@@ -7,7 +8,8 @@ from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 import simcal as sc
 from groundtruth import ground_truth
 
-simple_sim = os.path.dirname(os.path.realpath(__file__))  # Get path to THIS folder where the simulator lives
+simple_sim = Path(os.path.dirname(os.path.realpath(__file__)))  # Get path to THIS folder where the simulator lives
+
 
 class ExampleSimulator(sc.Simulator):
 
@@ -16,7 +18,7 @@ class ExampleSimulator(sc.Simulator):
         self.time = time
 
     def run(self, env, args):
-        cmdargs = [simple_sim/"simple_simulator.py"] + list(args[0]) + list(args[1]) + [self.time]
+        cmdargs = [simple_sim / "simple_simulator.py"] + list(args[0]) + list(args[1]) + [self.time]
         std_out, std_err, exit_code = sc.bash("python3", cmdargs, )
         if std_err:
             print(std_out, std_err, exit_code)
@@ -69,9 +71,9 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
-start=time()
-calibration,loss = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
+start = time()
+calibration, loss = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
 print("final calibration")
 print(calibration)
 print(loss)
-print(time()-start)
+print(time() - start)
