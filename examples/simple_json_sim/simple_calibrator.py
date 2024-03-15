@@ -79,5 +79,6 @@ coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
 calibration, loss = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
+print("final calibration")
 print(calibration)
 print(loss)

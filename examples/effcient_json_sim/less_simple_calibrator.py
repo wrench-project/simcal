@@ -8,7 +8,8 @@ from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 import simcal as sc
 from groundtruth import ground_truth
 
-efficient_json_sim = Path(os.path.dirname(os.path.realpath(__file__)))  # Get path to THIS folder where the simulator lives
+efficient_json_sim = Path(
+    os.path.dirname(os.path.realpath(__file__)))  # Get path to THIS folder where the simulator lives
 
 
 class ExampleSimulator(sc.Simulator):
@@ -80,7 +81,7 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
+print("final calibration")
 print(calibration)
-print("testing calibration")
-print(scenario1(calibration))
+print(loss)
