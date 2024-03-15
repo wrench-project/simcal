@@ -19,11 +19,10 @@ class Simulator(object):
             environment = Environment()
         else:
             environment = env
-        # self.setup(env)
-        ret = self.run(environment, args)
-        # handler = Handler(self, env)
-        # ret=self.extract(env)
-        # self.cleanup(env)
-        if env is None:
-            environment.cleanup()
-        return ret
+        with environment:
+            # self.setup(env)
+            ret = self.run(environment, args)
+            # handler = Handler(self, env)
+            # ret=self.extract(env)
+            # self.cleanup(env)
+            return ret

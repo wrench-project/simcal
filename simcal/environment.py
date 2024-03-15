@@ -148,3 +148,9 @@ class Environment(object):
         else:
             path = pathlib.Path(self._cwd / path).resolve()
         return path
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, exception_traceback):
+        self.cleanup()
