@@ -41,7 +41,7 @@ class Random(Base):
                 calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
             for key in self._categorical_params:
-                calibration[key] = random.choice(self._categorical_params[key].get_categories)
+                calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
             coordinator.allocate(_eval, (evaluate_point, calibration))
             results = coordinator.collect()

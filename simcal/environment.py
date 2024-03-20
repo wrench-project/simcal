@@ -100,7 +100,7 @@ class Environment(object):
                  mode: str = 'w') -> tempfile.NamedTemporaryFile:
         """Creates a unique temporary file for the simulator to use.
 
-        :param directory: directory to use as parent.  If `None`, the system temp directory is used
+        :param directory: directory to use as parent.  If `None`, the system temp directory or cwd is used depending on use_cwd
         :type directory: str | os.PathLike | None
 
         :param keep: Optional parameter to keep the temporary file instead of deleting it.  Defaults to false.
