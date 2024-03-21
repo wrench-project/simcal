@@ -1,4 +1,5 @@
 import random
+import sys
 from time import time
 
 from simcal.calibrators.base import Base
@@ -9,7 +10,7 @@ def _eval(evaluate_point, calibration):
 
 
 class Debug(Base):
-    def __init__(self, logger):
+    def __init__(self, logger=sys.stdout):
         super().__init__()
         self.logger = logger
 
