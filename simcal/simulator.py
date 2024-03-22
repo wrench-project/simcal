@@ -16,13 +16,27 @@ class Simulator(object):
 
     def __call__(self, args, env: Environment | None = None):  # handle async stuff
         if env is None:
-            environment = Environment()
+            environment = _EnvManager(True, Environment())
         else:
-            environment = env
+            environment = _EnvManager(False, env)
+
         with environment:
             # self.setup(env)
-            ret = self.run(environment, args)
+            ret = self.run(environment.env, args)
             # handler = Handler(self, env)
             # ret=self.extract(env)
             # self.cleanup(env)
             return ret
+
+
+class _EnvManager(object):
+    def __init__(self, cleanup, env):
+        self.cleanup = cleanup
+        self.env = env
+
+    def __enter__(self):
+        return self.env
+
+    def __exit__(self, exception_type, exception_value, exception_traceback):
+        if (self.cleanup):
+            self.env.cleanup()
