@@ -90,7 +90,7 @@ class Environment(object):
         :rtype: pathlib.Path"""
         if self._use_cwd and directory is None:
             directory = self._cwd
-        path = tempfile.TemporaryDirectory(ignore_cleanup_errors=True, dir=directory, delete=keep)
+        path = tempfile.TemporaryDirectory(ignore_cleanup_errors=True, dir=directory, delete=False)
         if not keep:
             self._dir_stack.append(path)
         self.cd(path.name)
