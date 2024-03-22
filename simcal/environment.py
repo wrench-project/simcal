@@ -116,7 +116,7 @@ class Environment(object):
         :rtype: tempfile.NamedTemporaryFile"""
         if self._use_cwd and directory is None:
             directory = self._cwd
-        path = tempfile.NamedTemporaryFile(delete_on_close=False, dir=directory, delete=keep, encoding=encoding,
+        path = tempfile.NamedTemporaryFile(delete_on_close=False, dir=directory, delete=False, encoding=encoding,
                                            mode=mode)
         if not keep:
             self._file_stack.append(path)
