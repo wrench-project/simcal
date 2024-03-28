@@ -109,4 +109,3 @@ class _RectangularIterator(object):
                 current_sets[i] = set(update)
                 cores[i] += update
                 cores[i].sort()
-

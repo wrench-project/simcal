@@ -72,6 +72,7 @@ class ThreadPool(Base):
             for handle in self.handles:
                 handle.cancel()
             self.handles = []
+            #TODO allow graceful cancling of gradient descent
         with self.pool_full:
             self.pool_full.notify()
         with self.awaiting_result:

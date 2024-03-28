@@ -10,10 +10,11 @@ def _eval(evaluate_point, calibration):
 
 
 class Random(Base):
-    def __init__(self,seed=None):
+    def __init__(self, seed=None):
         super().__init__()
         if seed:
             random.seed(seed)
+
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
