@@ -62,7 +62,7 @@ class GradientDescent(sc.Base):
                 best = self._populate(param_vector, vector_mapping, best_categorical)
             if self.early_reject_loss is not None and best_loss >= self.early_reject_loss:
                 break
-            print("finding gradient")
+            #print("finding gradient")
             loss_at_param = best_c_loss
             # find gradient
             gradient = np.empty(dimensions)
@@ -80,7 +80,7 @@ class GradientDescent(sc.Base):
             # h(xi)=f(xi)+gradient(dot)norm_gradient*scale
 
             # backtracking line search
-            print("backtracking Line search")
+            #print("backtracking Line search")
             grad_norm = normalize([gradient], norm="l2")[
                 0]  # why is scikit normalize so werid?  just take a 1d vector and return a scaler!
             backtrack = learning_rate * 10
@@ -116,7 +116,7 @@ class GradientDescent(sc.Base):
             internal = sc.Grid()
         else:
             internal = sc.Random(self.seed)
-        print("starting new gradient")
+        #print("starting new gradient")
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
 
