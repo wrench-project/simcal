@@ -106,7 +106,7 @@ class GradientDescent(sc.Base):
                     break
             previous_loss = best_loss
 
-        return best_loss
+        return best, best_loss
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
@@ -135,4 +135,4 @@ class _GradientFunctor(object):
 
     def __call__(self, calibration):
         self.best, self.best_loss = self.grad.descend(self.evaluate_point, calibration)
-        return self.best
+        return self.best_loss
