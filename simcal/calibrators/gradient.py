@@ -1,22 +1,21 @@
 import numpy as np
 from sklearn.preprocessing import normalize
 
-from simcal.calibrators import Random, Grid
-from simcal.calibrators.base import Base
+import simcal.calibrators as sc
 
 
-class GradientDescent(Base):
-    def __init__(self, delta=None, epsilon=None, seed=None, early_stopping_loss=None):
+class GradientDescent(sc.Base):
+    def __init__(self, delta, epsilon, seed=None, early_reject_loss=None):
         super().__init__()
         self.seed = seed
         self.epsilon = epsilon
         self.delta = delta
-        self.early_stopping_loss = early_stopping_loss
+        self.early_reject_loss = early_reject_loss
 
     def _populate(self, param_vector, vector_mapping, categoricals):
         args = categoricals.copy()
-        for i, key in enumerate(param_vector):
-            args[key] = self._ordered_params[key].from_normalized(param_vector[key])
+        for i, key in enumerate(vector_mapping):
+            args[key] = self._ordered_params[key].from_normalized(param_vector[i])
         return args
 
     def _evaluate_vector(self, evaluate_point, param_vector, vector_mapping, categoricals):
@@ -29,22 +28,23 @@ class GradientDescent(Base):
             categorical_params = [None]
         else:
             categorical_params = self._categorical_params
-        delta = self.delta
+        learning_rate = self.delta
         best_loss = None
-        best = None
+        best = initial_point
         previous_loss = None
         vector_mapping = list(self._ordered_params.keys())
         dimensions = len(vector_mapping)
         param_vector = np.empty(dimensions)
 
-        for i, key in vector_mapping:
-            param_vector[i] = self._ordered_params.keys[key].to_normalized(initial_point[key])
+
 
         while True:
+            for i, key in enumerate(vector_mapping):
+                param_vector[i] = self._ordered_params[key].to_normalized(best[key])
             # Get current loss and best categoricals
             best_categorical = None
             best_c_loss = None
-            for c in self._categorical_params:
+            for c in categorical_params:
                 categoricals = {}
                 if c is not None:  # determin best categoricals at this point
                     for param in c:  # repackage categorical params for calibrator
@@ -60,27 +60,30 @@ class GradientDescent(Base):
             if best_loss is None or best_loss < best_c_loss:
                 best_loss = best_c_loss
                 best = self._populate(param_vector, vector_mapping, best_categorical)
-            if best_loss >= self.early_stopping_loss:
+            if self.early_reject_loss is not None and best_loss >= self.early_reject_loss:
                 break
+            print("finding gradient")
             loss_at_param = best_c_loss
             # find gradient
             gradient = np.empty(dimensions)
             for i in range(dimensions):
                 tmp_vector = param_vector.copy()
-                tmp_vector[i] += delta
+                tmp_vector[i] += self.delta
                 direction_loss = self._evaluate_vector(evaluate_point, tmp_vector, vector_mapping, best_categorical)
-                gradient[i] = (direction_loss - loss_at_param) / delta
+                gradient[i] = (direction_loss - loss_at_param) / learning_rate
                 if direction_loss < best_loss:
                     best_loss = direction_loss
-                    best = self._populate(param_vector, vector_mapping, best_categorical)
+                    best = self._populate(tmp_vector, vector_mapping, best_categorical)
 
             # [xi+1]=xi+norm_gradient*scale
             # h(xi)=f(xi)+gradient(dot)(xi-[xi+1])
             # h(xi)=f(xi)+gradient(dot)norm_gradient*scale
 
             # backtracking line search
-            grad_norm = normalize(gradient, norm="l2")
-            backtrack = delta * 10
+            print("backtracking Line search")
+            grad_norm = normalize([gradient], norm="l2")[
+                0]  # why is scikit normalize so werid?  just take a 1d vector and return a scaler!
+            backtrack = learning_rate * 10
             last_check = False
             while True:
                 gradient_step = grad_norm * backtrack
@@ -90,32 +93,34 @@ class GradientDescent(Base):
                 actual = self._evaluate_vector(evaluate_point, backtrack_test, vector_mapping, best_categorical)
                 if actual < best_loss:
                     best_loss = actual
-                    best = backtrack_test
+                    best = self._populate(backtrack_test, vector_mapping, best_categorical)
                 if last_check:
                     break
-                if loss_at_param - actual < self.epsilon:  # we arent making any progress at all
+                if actual - loss_at_param < self.epsilon:  # we arent making any progress at all
                     last_check = True
-
+                    print("Just 1 more check")
                 backtrack /= 2
             # update learning rate
-            delta = backtrack
+            learning_rate = backtrack
             # stop on a plataeu
             if previous_loss is not None:
                 if previous_loss - best_loss < self.epsilon:
                     break
             previous_loss = best_loss
-        return best, best_loss
+
+        return best_loss, best
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
-        if self._ordered_params.empty():
-            internal = Grid()
+        if len(self._ordered_params) <= 0:
+            internal = sc.Grid()
         else:
-            internal = Random(self.seed)
+            internal = sc.Random(self.seed)
+        print("starting new gradient")
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
 
-        if self._ordered_params.empty():  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
+        if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
             return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
             functor = _GradientFunctor(self, evaluate_point)
