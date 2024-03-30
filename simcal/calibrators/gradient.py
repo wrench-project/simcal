@@ -120,7 +120,7 @@ class GradientDescent(sc.Base):
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
             return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
-            internal._eval = self.grad.descend
+            internal._eval = self.descend
         return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
 
 
