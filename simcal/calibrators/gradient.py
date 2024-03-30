@@ -24,7 +24,7 @@ class GradientDescent(sc.Base):
 
     def descend(self, evaluate_point, initial_point):
         # TODO (later) gracefully handle early stops
-        if not self._categorical_params:
+        if len(self._categorical_params) = 0:
             categorical_params = [None]
         else:
             categorical_params = self._categorical_params
@@ -42,6 +42,7 @@ class GradientDescent(sc.Base):
             # Get current loss and best categoricals
             best_categorical = None
             best_c_loss = None
+			print(categorical_params)
             for c in categorical_params:
                 categoricals = {}
                 if c is not None:  # determin best categoricals at this point
@@ -105,7 +106,6 @@ class GradientDescent(sc.Base):
                 if previous_loss - best_loss < self.epsilon:
                     break
             previous_loss = best_loss
-
         return best, best_loss
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
