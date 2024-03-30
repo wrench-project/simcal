@@ -24,7 +24,7 @@ class GradientDescent(sc.Base):
 
     def descend(self, evaluate_point, initial_point):
         # TODO (later) gracefully handle early stops
-        if len(self._categorical_params) = 0:
+        if len(self._categorical_params) == 0:
             categorical_params = [None]
         else:
             categorical_params = self._categorical_params
