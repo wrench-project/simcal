@@ -14,7 +14,7 @@ class Random(Base):
         super().__init__()
         if seed:
             random.seed(seed)
-		self._eval = _eval
+        self._eval = _eval
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
