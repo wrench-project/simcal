@@ -42,7 +42,7 @@ class GradientDescent(sc.Base):
             # Get current loss and best categoricals
             best_categorical = None
             best_c_loss = None
-			print(categorical_params)
+            print(categorical_params)
             for c in categorical_params:
                 categoricals = {}
                 if c is not None:  # determin best categoricals at this point
