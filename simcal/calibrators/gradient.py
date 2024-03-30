@@ -24,7 +24,7 @@ class GradientDescent(sc.Base):
 
     def descend(self, evaluate_point, initial_point):
         # TODO (later) gracefully handle early stops
-        if len(self._categorical_params) == 0:
+        if not self._categorical_params:
             categorical_params = [None]
         else:
             categorical_params = self._categorical_params
@@ -42,7 +42,6 @@ class GradientDescent(sc.Base):
             # Get current loss and best categoricals
             best_categorical = None
             best_c_loss = None
-            print(categorical_params)
             for c in categorical_params:
                 categoricals = {}
                 if c is not None:  # determin best categoricals at this point
@@ -121,15 +120,15 @@ class GradientDescent(sc.Base):
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
             return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
-            functor = _GradientFunctor(self, evaluate_point)
-        return internal.calibrate(functor, early_stopping_loss, iterations, timelimit, coordinator)
+            internal._eval = self.grad.descend
+        return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
 
 
-class _GradientFunctor(object):
-    # this lets use use random search.  we make a functor with access the gradient descent, then we let random call the functor, which calls the descent function in gradient descent, which in turn calls the actual functor given to us
-    def __init__(self, grad, evaluate_point):
-        self.grad = grad
-        self.evaluate_point = evaluate_point
-
-    def __call__(self, calibration):
-        return self.grad.descend(self.evaluate_point, calibration)
+#class _GradientFunctor(object):
+#    # this lets use use random search.  we make a functor with access the gradient descent, then we let random call the functor, which calls the descent function in gradient descent, which in turn calls the actual functor given to us
+#    def __init__(self, grad, evaluate_point):
+#        self.grad = grad
+#        self.evaluate_point = evaluate_point
+#
+#    def __call__(self, calibration):
+#        return self.grad.descend(self.evaluate_point, calibration)

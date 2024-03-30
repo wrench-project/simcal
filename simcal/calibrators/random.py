@@ -14,7 +14,7 @@ class Random(Base):
         super().__init__()
         if seed:
             random.seed(seed)
-
+		self._eval = _eval
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
@@ -44,7 +44,7 @@ class Random(Base):
             for key in self._categorical_params:
                 calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
-            coordinator.allocate(_eval, (evaluate_point, calibration))
+            coordinator.allocate(self._eval, (evaluate_point, calibration))
             results = coordinator.collect()
             for current, loss in results:
                 print(best_loss,loss,current)
