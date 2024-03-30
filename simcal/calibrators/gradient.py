@@ -122,17 +122,14 @@ class GradientDescent(sc.Base):
             return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
             functor = _GradientFunctor(self, evaluate_point)
-        internal.calibrate(functor, early_stopping_loss, iterations, timelimit, coordinator)
-        return _GradientFunctor.best,_GradientFunctor.best_loss
+        return internal.calibrate(functor, early_stopping_loss, iterations, timelimit, coordinator)
+
 
 class _GradientFunctor(object):
     # this lets use use random search.  we make a functor with access the gradient descent, then we let random call the functor, which calls the descent function in gradient descent, which in turn calls the actual functor given to us
     def __init__(self, grad, evaluate_point):
         self.grad = grad
         self.evaluate_point = evaluate_point
-        self.best = None
-        self.best_loss = None
 
     def __call__(self, calibration):
-        self.best, self.best_loss = self.grad.descend(self.evaluate_point, calibration)
-        return self.best_loss
+        return self.grad.descend(self.evaluate_point, calibration)

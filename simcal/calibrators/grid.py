@@ -9,7 +9,7 @@ from simcal.calibrators.base import Base
 
 
 def _eval(evaluate_point, calibration):
-    return evaluate_point(calibration), calibration
+    return calibration, evaluate_point(calibration)
 
 
 class Grid(Base):
@@ -31,7 +31,7 @@ class Grid(Base):
                     break
                 coordinator.allocate(_eval, (evaluate_point, calibration))
                 results = coordinator.collect()
-                for loss, current in results:
+                for current, loss in results:
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
