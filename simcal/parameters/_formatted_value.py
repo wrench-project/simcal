@@ -195,7 +195,7 @@ class _FormattedValue(json.JSONEncoder):
         :return: True if the values are equal, False otherwise.
         :rtype: bool
         """
-        return self.value == other
+        return self.value != other
 
     def __le__(self, other: int | float) -> bool:
         """
@@ -205,7 +205,7 @@ class _FormattedValue(json.JSONEncoder):
         :return: True if the instance value is less than the other value, False otherwise.
         :rtype: bool
         """
-        return self.value < other
+        return self.value <= other
 
     def __ge__(self, other: int | float) -> bool:
         """

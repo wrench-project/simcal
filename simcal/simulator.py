@@ -11,7 +11,7 @@ class Simulator(object):
     def __init__(self, coordinator=None):
         self.coordinator = coordinator
 
-    def run(self, env, args) -> Any:
+    def run(self, env: Environment, args) -> Any:
         raise NotImplementedError("Simulator.run(self,env,args) must be user defined")
 
     def __call__(self, args, env: Environment | None = None):  # handle async stuff

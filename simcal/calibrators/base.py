@@ -13,8 +13,18 @@ class Base(object):
         # compute_loss(reference_data,result)
 
     def add_param(self, name, parameter):
+        if name in self._ordered_params or name in self._categorical_params:
+            raise ValueError(f"Parameter {name} already exists")  # TODO: pick the correct error class
         if isinstance(parameter, Ordered):
             self._ordered_params[name] = parameter
         else:
             self._categorical_params[name] = parameter
         return self
+
+    def get_param(self, name):
+        if name in self._ordered_params:
+            return self._ordered_params[name]
+        elif name in self._categorical_params:
+            return self._categorical_params[name]
+        else:
+            return None
