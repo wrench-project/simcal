@@ -34,6 +34,4 @@ class Base(object):
         return self.metadata
 
     def apply_format(self, value):
-        if self.formatter:
-            return Value(self.formatter, value, self)
         return Value(None, value, self)
