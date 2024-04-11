@@ -36,4 +36,4 @@ class Base(object):
     def apply_format(self, value):
         if self.formatter:
             return Value(self.formatter, value, self)
-        return value
+        return Value(None, value, self)
