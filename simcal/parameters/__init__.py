@@ -4,6 +4,7 @@ from simcal.parameters.exponential import Exponential
 from simcal.parameters.linear import Linear
 from simcal.parameters.ordered import Ordered
 from simcal.parameters.ordinal import Ordinal
+from simcal.parameters.value import Value
 
 __all__ = [
     "Base",
@@ -11,5 +12,6 @@ __all__ = [
     "Categorical",
     "Ordinal",
     "Linear",
-    "Exponential"
+    "Exponential",
+    "Value"
 ]
