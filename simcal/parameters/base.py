@@ -6,7 +6,7 @@ from simcal.parameters.value import Value
 class Base(object):
     def __init__(self):
         self.formatter = None
-        self.metadata = None
+        self.custom_data = None
 
     def format(self, formatter):
         """
@@ -17,21 +17,21 @@ class Base(object):
         self.formatter = formatter
         return self
 
-    def set_metadata(self, metadata: Any):
+    def set_custom_data(self, custom_data: Any):
         """
-        Add arbitrary, user-defined metadata to the parameter
-        :param Any metadata: the metadata
+        Add arbitrary user-defined data to the parameter, which can be retrieved later if need be
+        :param Any custom_data: the metadata
         """
-        self.metadata = metadata
+        self.custom_data = custom_data
         return self
 
-    def get_metadata(self) -> Any:
+    def get_custom_data(self) -> Any:
         """
-        Retrieve user-defined metadata that may have been added to the parameter
-        :return: the metadata
+        Retrieve user-defined data that may have been added to the parameter
+        :return: the custom data
         :rtype: Any
         """
-        return self.metadata
+        return self.custom_data
 
     def apply_format(self, value):
         return Value(None, value, self)
