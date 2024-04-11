@@ -1,5 +1,7 @@
 from typing import Any
 
+from simcal.parameters.value import Value
+
 
 class Base(object):
     def __init__(self):
@@ -30,3 +32,8 @@ class Base(object):
         :rtype: Any
         """
         return self.metadata
+
+    def apply_format(self, value):
+        if self.formatter:
+            return Value(self.formatter, value, self)
+        return value

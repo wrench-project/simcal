@@ -1,4 +1,3 @@
-from simcal.parameters._formatted_value import _FormattedValue
 from simcal.parameters.ordered import Ordered
 
 
@@ -15,9 +14,7 @@ class Ordinal(Ordered):
         if idx >= len(self.options):
             idx = len(self.options) - 1
         value = self.options[idx]
-        if self.formatter:
-            return _FormattedValue(self.formatter, value)
-        return value
+        return self.apply_format(value)
 
     def to_normalized(self, x: any):
         if self.to_normalize_override:

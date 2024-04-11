@@ -1,6 +1,6 @@
 import math
 
-from simcal.parameters._formatted_value import _FormattedValue
+from simcal.parameters.value import Value
 from simcal.parameters.ordered import Ordered
 from simcal.utility_functions import safe_exp2
 
@@ -12,14 +12,12 @@ class Exponential(Ordered):
         self.start = start
         self.end = end
 
-    def from_normalized(self, x: float) -> float | _FormattedValue:
+    def from_normalized(self, x: float) -> float | Value:
         if self.from_normalize_override:
             return self.from_normalize_override(self, x)
         x_normal = (x - self.range_start) / (self.range_end - self.range_start)
         value = safe_exp2(x_normal * (self.end - self.start) + self.start)
-        if self.formatter:
-            return _FormattedValue(self.formatter, value)
-        return value
+        return self.apply_format(value)
 
     def to_normalized(self, x: float):
         if self.to_normalize_override:

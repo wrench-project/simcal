@@ -1,4 +1,4 @@
-from simcal.parameters._formatted_value import _FormattedValue
+from simcal.parameters.value import Value
 from simcal.parameters.base import Base
 
 
@@ -17,8 +17,9 @@ class Ordered(Base):
         raise NotImplementedError(
             self.__class__.__name__ + " does not define from_normalized(self,x) and does not have an override")
 
-    def to_normalized(self, x: float | _FormattedValue):
+    def to_normalized(self, x: float | Value):
         if self.to_normalize_override:
             return self.to_normalize_override(self, x)
         raise NotImplementedError(
             self.__class__.__name__ + " does not define to_normalized(self,x) and does not have an override")
+

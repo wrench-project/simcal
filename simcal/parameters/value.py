@@ -1,15 +1,20 @@
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from simcal import parameters
 import json
 
 from copy import copy
 
 
-class _FormattedValue(json.JSONEncoder):
+class Value(json.JSONEncoder):
     """
     Represents a value with a specific format for string representation.
     """
 
-    def __init__(self, formatter: str, value: int | float) -> None:
+    def __init__(self, formatter: str, value: int | float, parameter: parameters.base) -> None:
         """
         Initializes the _FormattedValue instance.
 
@@ -17,8 +22,12 @@ class _FormattedValue(json.JSONEncoder):
         :param int | float value: The numeric value.
         """
         super().__init__()
-        self.formatter = formatter
-        self.value = value
+        self.formatter: str = formatter
+        self.value: int | float = value
+        self.parameter: parameters.base = parameter
+
+    def get_parameter(self) -> parameters.base:
+        return self.parameter
 
     def _apply_format(self, x: float) -> str:
         """
@@ -66,12 +75,12 @@ class _FormattedValue(json.JSONEncoder):
         """
         return self.value
 
-    def __neg__(self) -> _FormattedValue:
+    def __neg__(self) -> Value:
         """
         Overloads the negation operator.
 
         :return: The result of inversion.
-        :rtype: _FormattedValue
+        :rtype: Value
         """
         ret = copy(self)
         ret.value = -self.value
