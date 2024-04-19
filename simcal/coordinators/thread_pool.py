@@ -11,8 +11,8 @@ from simcal.coordinators import Base
 
 
 class ThreadPool(Base):
-    def __init__(self, pool_size=None, timelimit=None):
-        super().__init__(timelimit)
+    def __init__(self, pool_size=None, hard_timelimit=None):
+        super().__init__(hard_timelimit)
         self.managementLock = threading.Lock()
         self.pool_full = threading.Condition()
         self.awaiting_result = threading.Condition()
@@ -20,8 +20,8 @@ class ThreadPool(Base):
             pool_size = cpu_count()
         self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
         self.pool_size = pool_size
-        if timelimit:
-            self._timer = threading.Timer(timelimit, self._timeout)
+        if hard_timelimit:
+            self._timer = threading.Timer(hard_timelimit, self._timeout)
             self._timer.start()
         # TODO make threading alarm thing based on timelimit
     def addTimeout(self,timelimit):

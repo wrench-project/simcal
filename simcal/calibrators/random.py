@@ -18,17 +18,17 @@ class Random(Base):
         self._eval = _eval
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
-                  timelimit=None, coordinator=None):
+                  soft_timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
         if coordinator is None:
             coordinator = Coordinator()
         best = None
         best_loss = None
-        if timelimit is None:
+        if soft_timelimit is None:
             end = float('inf')
         else:
-            end = time() + timelimit
+            end = time() + soft_timelimit
         if iterations is None:
             itr = count(start=0, step=1)
         else:
