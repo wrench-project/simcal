@@ -11,7 +11,7 @@ from groundtruth import ground_truth
 efficient_json_sim = Path(
     os.path.dirname(os.path.realpath(__file__)))  # Get path to THIS folder where the simulator lives
 
-
+#TODO Refactor this example
 class ExampleSimulator(sc.Simulator):
     def __init__(self, time=0):
         super().__init__()
@@ -34,7 +34,7 @@ class Scenario:
         self.ground_truth = ground_truth
         self.loss_function = loss
 
-    def __call__(self, calibration):
+    def __call__(self, calibration,stop_time):
         res = []
         env = sc.Environment()
         env.tmp_dir(directory=".")
@@ -81,7 +81,7 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration, loss = calibrator.calibrate(scenario1, soft_timelimit=600, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(scenario1, timelimit=600, coordinator=coordinator)
 print("final calibration")
 print(calibration)
 print(loss)

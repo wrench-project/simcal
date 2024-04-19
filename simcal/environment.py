@@ -3,8 +3,10 @@ from __future__ import annotations
 import os
 import pathlib
 import tempfile
+import time
 from typing import Self
 
+import simcal.exceptions as exception
 from simcal.utility_functions import bash
 
 
@@ -22,7 +24,7 @@ class Environment(object):
 
     """
 
-    def __init__(self, cwd: str | os.PathLike | None = None) -> None:
+    def __init__(self, cwd: str | os.PathLike | None = None, stoptime: int | float | None = None) -> None:
         """Constructor"""
         super().__init__()
         # the Original Working Directory that will be returned to during cleanup
@@ -38,6 +40,7 @@ class Environment(object):
         self._file_stack: list[tempfile.TemporaryFile] = list()
 
         self._use_cwd = os.PathLike is not None
+        self.stoptime = stoptime
 
     def use_cwd(self) -> Self:
         """
@@ -137,7 +140,8 @@ class Environment(object):
     # TODO document things under here
     def bash(self, command, args=None, std_in=None):  # TODO account for remote ex
         # os.chdir(self._cwd)
-        return bash(command, args, std_in, cwd=self._cwd)
+        timeout = self.timeout_shortout()
+        return bash(command, args, std_in, cwd=self._cwd, timeout=timeout)
 
     def open(self, file, *args, **kwargs):
         return open(self.path(file), *args, **kwargs)
@@ -154,3 +158,10 @@ class Environment(object):
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
         self.cleanup()
+
+    def timeout_shortout(self):
+        if self.stoptime is not None:
+            if time.time() > self.stoptime:
+                raise exception.Timeout()
+            return self.stoptime - time.time()
+        return None

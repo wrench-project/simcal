@@ -1,4 +1,8 @@
-class EarlyTermination(RuntimeError):
+class Base(RuntimeError):
+    pass
+
+
+class EarlyTermination(Base):
     def __init__(self, result, exception):
         super().__init__("A Calibrator Ended Early.  Possible due to a timelimit being reached, "
                          "or possibly because of an error in the simulator.\n\tReturned Result%s" % (result,))
@@ -6,15 +10,5 @@ class EarlyTermination(RuntimeError):
         self.exception = exception
 
 
-class Timeout(RuntimeError):
+class Timeout(Base):
     pass
-
-
-class SoftTimeout(Timeout):
-    def __init__(self):
-        super().__init__("Soft Timelimit reached")
-
-
-class HardTimeout(Timeout):
-    def __init__(self):
-        super().__init__("Hard Timelimit reached")

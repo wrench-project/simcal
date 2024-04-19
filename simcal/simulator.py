@@ -14,12 +14,13 @@ class Simulator(object):
     def run(self, env: Environment, args) -> Any:
         raise NotImplementedError("Simulator.run(self,env,args) must be user defined")
 
-    def __call__(self, args, env: Environment | None = None):  # handle async stuff
+    def __call__(self, args, env: Environment | None = None, stoptime: int | float | None = None):  # handle async stuff
         if env is None:
-            environment = _EnvManager(True, Environment())
+            environment = _EnvManager(True, Environment(stoptime=stoptime))
         else:
             environment = _EnvManager(False, env)
-
+            if stoptime is not None:
+                env.stoptime = stoptime
         with environment:
             # self.setup(env)
             ret = self.run(environment.env, args)

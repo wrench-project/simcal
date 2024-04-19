@@ -1,8 +1,10 @@
 import math
 import subprocess
 
+from simcal.exceptions import Timeout
 
-def bash(command, args=None, std_in=None, cwd=None):
+
+def bash(command, args=None, std_in=None, cwd=None, timeout=None):
     cmd_list = [command]
     for arg in args:
         cmd_list.append(str(arg))
@@ -13,11 +15,14 @@ def bash(command, args=None, std_in=None, cwd=None):
                                stderr=subprocess.PIPE,
                                text=True,
                                cwd=cwd)
-
-    if std_in is not None:
-        stdout, stderr = process.communicate(input=std_in)
-    else:
-        stdout, stderr = process.communicate()
+    try:
+        if std_in is not None:
+            stdout, stderr = process.communicate(input=std_in, timeout=timeout)
+        else:
+            stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as e:
+        process.kill()
+        raise Timeout()
 
     return_code = process.returncode
     return stdout, stderr, return_code

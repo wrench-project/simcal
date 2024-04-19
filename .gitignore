@@ -3,3 +3,4 @@
 /build
 /simcal.egg-info
 /dist
+examples/*/tmp*/

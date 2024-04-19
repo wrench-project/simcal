@@ -31,13 +31,13 @@ class Scenario:
         self.ground_truth = ground_truth
         self.loss_function = loss
 
-    def __call__(self, calibration):
+    def __call__(self, calibration, stop_time):
         unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
         res = []
         # Run simulator for all known ground truth points
         print(calibration)
         for x in self.ground_truth[0]:
-            res.append(self.simulator((x, unpacked)))
+            res.append(self.simulator((x, unpacked), stoptime=stop_time))
         ret = self.loss_function(res, self.ground_truth[1])
         print(ret)
         return ret
@@ -72,10 +72,10 @@ calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
 calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
 calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
-coordinator = sc.coordinators.ThreadPool(pool_size=4, hard_timelimit=10)  # Making a coordinator is optional, and only needed if you
+coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 start = time()
-calibration, loss = calibrator.calibrate(scenario1, soft_timelimit=60, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(scenario1, timelimit=10, coordinator=coordinator)
 print("final calibration")
 print(calibration)
 print(loss)

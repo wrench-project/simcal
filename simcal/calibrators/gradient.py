@@ -22,9 +22,9 @@ class GradientDescent(sc.Base):
         return args
 
     def _evaluate_vector(self, evaluate_point, param_vector, vector_mapping, categoricals, stop_time):
-        self._timeout_shortout(stop_time)
         args = self._populate(param_vector, vector_mapping, categoricals, )
-        return evaluate_point(args)
+        self._timeout_shortout(stop_time)
+        return evaluate_point(args, stop_time)
 
     def _clamp_vector(self, param_vector, vector_mapping):
         for i in range(len(param_vector)):
@@ -34,10 +34,6 @@ class GradientDescent(sc.Base):
 
     def _get_raw_param(self, index, vector_mapping):
         return self._ordered_params[vector_mapping[index]]
-
-    def _timeout_shortout(self, stoptime):
-        if stoptime is not None and time.time() > stoptime:
-            raise exception.SoftTimeout()
 
     def descend(self, evaluate_point, initial_point, stop_time):
         # TODO (later) gracefully handle early stops
@@ -142,14 +138,14 @@ class GradientDescent(sc.Base):
             if eloss is None or (best_loss is not None and eloss > best_loss):
                 e.result = (best, best_loss)
             raise e
-        except exception.SoftTimeout:
+        except exception.Timeout:
             return best, best_loss
         except BaseException as e:
             raise exception.EarlyTermination((best, best_loss), e)
         return best, best_loss
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
-                  soft_timelimit=None, coordinator=None):
+                  timelimit=None, coordinator=None):
         if len(self._ordered_params) <= 0:
             internal = sc.Grid()
         else:
@@ -158,23 +154,21 @@ class GradientDescent(sc.Base):
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
-            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, soft_timelimit, coordinator)
+            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
-            if soft_timelimit is None:
+            if timelimit is None:
                 stop_time = None
             else:
-                stop_time = time.time() + soft_timelimit
-            internal._eval = _TimeoutCarrier(self.descend, stop_time)
-            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, soft_timelimit, coordinator)
+                stop_time = time.time() + timelimit
+            internal._eval = self.descend
+            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
 
-
-class _TimeoutCarrier:
-    def __init__(self, function, stop_time):
-        self.stop_time = stop_time
-        self.function = function
-
-    def __call__(self, evaluate_point, initial_point):
-        self.function(evaluate_point, initial_point, self.stop_time)
+    def _timeout_shortout(self, stoptime):
+        if stoptime is not None:
+            if time.time() > stoptime:
+                raise exception.Timeout()
+            return stoptime - time.time()
+        return None
 
 # class _GradientFunctor(object):
 #    # this lets use use random search.  we make a functor with access the gradient descent, then we let random call the functor, which calls the descent function in gradient descent, which in turn calls the actual functor given to us
