@@ -1,6 +1,7 @@
 import random
 from itertools import count
 from time import time
+import simcal.exceptions as exception
 
 from simcal.calibrators.base import Base
 
@@ -32,25 +33,31 @@ class Random(Base):
             itr = count(start=0, step=1)
         else:
             itr = range(0, iterations)
+        try:
+            for i in itr:
+                if time() > end:
+                    break
 
-        for i in itr:
-            if time() > end:
-                break
+                calibration = {}
+                for key in self._ordered_params:
+                    param = self._ordered_params[key]
+                    calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-            calibration = {}
-            for key in self._ordered_params:
-                param = self._ordered_params[key]
-                calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
+                for key in self._categorical_params:
+                    calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
-            for key in self._categorical_params:
-                calibration[key] = random.choice(self._categorical_params[key].get_categories())
-
-            coordinator.allocate(self._eval, (evaluate_point, calibration))
-            results = coordinator.collect()
-            for current, loss in results:
-                #print(best_loss,loss,current)
-                if best is None or loss < best_loss:
-                    best = current
-                    best_loss = loss
-
+                coordinator.allocate(self._eval, (evaluate_point, calibration))
+                results = coordinator.collect()
+                for current, loss in results:
+                    #print(best_loss,loss,current)
+                    if best is None or loss < best_loss:
+                        best = current
+                        best_loss = loss
+        except exception.EarlyTermination as e:
+            ebest, eloss = e.result
+            if eloss is None or (best_loss is not None and eloss > best_loss):
+                e.result = (best, best_loss)
+            raise e
+        except BaseException as e:
+            raise exception.EarlyTermination((best, best_loss), e)
         return best, best_loss

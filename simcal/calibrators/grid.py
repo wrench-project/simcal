@@ -6,7 +6,7 @@ from time import time
 from numpy import linspace
 
 from simcal.calibrators.base import Base
-
+import simcal.exceptions as exception
 
 def _eval(evaluate_point, calibration):
     return calibration, evaluate_point(calibration)
@@ -25,16 +25,24 @@ class Grid(Base):
         best = None
         best_loss = None
         if timelimit is not None:
-            end = time() + timelimit
-            for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
-                if time() > end:
-                    break
-                coordinator.allocate(_eval, (evaluate_point, calibration))
-                results = coordinator.collect()
-                for current, loss in results:
-                    if best is None or loss < best_loss:
-                        best = current
-                        best_loss = loss
+            try:
+                end = time() + timelimit
+                for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
+                    if time() > end:
+                        break
+                    coordinator.allocate(_eval, (evaluate_point, calibration))
+                    results = coordinator.collect()
+                    for current, loss in results:
+                        if best is None or loss < best_loss:
+                            best = current
+                            best_loss = loss
+            except exception.EarlyTermination as e:
+                ebest, eloss = e.result
+                if eloss is None or (best_loss is not None and eloss > best_loss):
+                    e.result = (best, best_loss)
+                raise e
+            except BaseException as e:
+                raise exception.EarlyTermination((best, best_loss), e)
         return best, best_loss
 
 
