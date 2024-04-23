@@ -36,6 +36,8 @@ class Grid(Base):
                         if best is None or loss < best_loss:
                             best = current
                             best_loss = loss
+            except exception.Timeout:
+                return best, best_loss
             except exception.EarlyTermination as e:
                 ebest, eloss = e.result
                 if eloss is None or (best_loss is not None and eloss > best_loss):
