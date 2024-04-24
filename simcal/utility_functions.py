@@ -5,7 +5,17 @@ from typing import Dict
 from simcal.exceptions import Timeout
 
 
-def bash(command, args=None, std_in=None, cwd=None, env: Dict[str, str] | None = None, timeout=None):
+def bash(command, args=None, std_in: int | None = None, cwd: str | None = None, env: Dict[str, str] | None = None, timeout=None):
+    """
+    A method to invoke an executable using the Shell
+    :param command: the executable name
+    :param args: the command-line arguments
+    :param std_in: standard input (e.g., subprocess.PIPE)
+    :param cwd: a working directory
+    :param env: environment variables
+    :param timeout: time limit in seconds
+    :return:
+    """
     cmd_list = [command]
     for arg in args:
         cmd_list.append(str(arg))
