@@ -1,10 +1,11 @@
 import math
 import subprocess
+from typing import Dict
 
 from simcal.exceptions import Timeout
 
 
-def bash(command, args=None, std_in=None, cwd=None, timeout=None):
+def bash(command, args=None, std_in=None, cwd=None, env: Dict[str, str] | None = None, timeout=None):
     cmd_list = [command]
     for arg in args:
         cmd_list.append(str(arg))
@@ -14,7 +15,8 @@ def bash(command, args=None, std_in=None, cwd=None, timeout=None):
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                text=True,
-                               cwd=cwd)
+                               cwd=cwd,
+                               env=env)
     try:
         if std_in is not None:
             stdout, stderr = process.communicate(input=std_in, timeout=timeout)
