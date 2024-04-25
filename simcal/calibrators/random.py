@@ -49,6 +49,8 @@ class Random(Base):
                 coordinator.allocate(self._eval, (evaluate_point, calibration,stop_time))
                 results = coordinator.collect()
                 for current, loss in results:
+                    if loss is None:
+                        continue
                     #print(best_loss,loss,current)
                     if best is None or loss < best_loss:
                         best = current

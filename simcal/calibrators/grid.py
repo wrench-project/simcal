@@ -33,6 +33,8 @@ class Grid(Base):
                     coordinator.allocate(_eval, (evaluate_point, calibration,stop_time))
                     results = coordinator.collect()
                     for current, loss in results:
+                        if loss is None:
+                            continue
                         if best is None or loss < best_loss:
                             best = current
                             best_loss = loss
