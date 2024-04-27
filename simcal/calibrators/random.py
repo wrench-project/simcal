@@ -6,8 +6,8 @@ import simcal.exceptions as exception
 from simcal.calibrators.base import Base
 
 
-def _eval(evaluate_point, calibration,stop_time):
-    return calibration, evaluate_point(calibration,stop_time)
+def _eval(evaluate_point, calibration, stop_time):
+    return calibration, evaluate_point(calibration, stop_time=stop_time, env=None)
 
 
 class Random(Base):
@@ -46,7 +46,7 @@ class Random(Base):
                 for key in self._categorical_params:
                     calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
-                coordinator.allocate(self._eval, (evaluate_point, calibration,stop_time))
+                coordinator.allocate(self._eval, (evaluate_point, calibration, stop_time))
                 results = coordinator.collect()
                 for current, loss in results:
                     if loss is None:
