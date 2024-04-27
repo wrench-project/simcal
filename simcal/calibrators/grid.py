@@ -29,16 +29,11 @@ class Grid(Base):
         if timelimit is not None:
             try:
                 stop_time = time() + timelimit
-                print("Now", time())
-                print("Stop time", stop_time)
                 for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
                     if time() > stop_time:
                         break
-                    print("Calling allocate...")
                     coordinator.allocate(_eval, (evaluate_point, calibration, stop_time))
-                    print("Calling collect...")
                     results = coordinator.collect()
-                    print("Called collect: ", results)
                     for current, loss in results:
                         if loss is None:
                             continue
