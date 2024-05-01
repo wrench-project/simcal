@@ -23,7 +23,7 @@ class Scenario:
     def __init__(self, simulator):
         self.simulator = simulator
 
-    def __call__(self, calibration,stoptime):
+    def __call__(self, calibration, stoptime):
         unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
 
         print(calibration)
@@ -35,22 +35,15 @@ class Scenario:
 simulator = ExampleSimulator(0)
 scenario1 = Scenario(simulator)
 
-# prepare the calibrator and setup the arguments to calibrate with their ranges
-# calibrator = sc.calibrators.Grid()
-# calibrator = sc.calibrators.Random()
-calibrator = sc.calibrators.GradientDescent(0.1, 1)
-
-calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
-calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
-calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
-calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
-
 coordinator = sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinator is optional, and only needed if you
-# wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
-start = time()
-calibration, loss = calibrator.calibrate(scenario1, timelimit=1)  # , coordinator=coordinator)
-print("final calibration")
-print(calibration)
-print(loss)
-print(time() - start)
-# Ideal A=10, B=4, C=5, D=3
+
+evaluator = sc.evaluation.LossCloud()
+evaluator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
+evaluator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
+evaluator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
+evaluator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
+#scenario1({'a': 10.5, 'b': 4, 'c': 5, 'd': 3}, 0)
+print(evaluator.find_cloud(scenario1, {'a': 10, 'b': 4, 'c': 5, 'd': 3}, 0.1, 1, .001, 0.3, timelimit=60, coordinator=coordinator))
+# def find_cloud(self, evaluate_point, parameter_vector, target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
+#                   max_points=None,
+#                   iterations=None, timelimit=None, coordinator=None):
