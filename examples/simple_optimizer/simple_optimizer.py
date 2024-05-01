@@ -23,7 +23,7 @@ class Scenario:
     def __init__(self, simulator):
         self.simulator = simulator
 
-    def __call__(self, calibration):
+    def __call__(self, calibration,stoptime):
         unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
 
         print(calibration)
@@ -32,7 +32,7 @@ class Scenario:
         return ret
 
 
-simulator = ExampleSimulator(1)
+simulator = ExampleSimulator(10)
 scenario1 = Scenario(simulator)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
@@ -48,7 +48,7 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=8)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 start = time()
-calibration, loss = calibrator.calibrate(scenario1, timelimit=60)  # , coordinator=coordinator)
+calibration, loss = calibrator.calibrate(scenario1, timelimit=60, coordinator=coordinator)
 print("final calibration")
 print(calibration)
 print(loss)
