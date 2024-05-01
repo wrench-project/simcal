@@ -10,7 +10,7 @@ import simcal.exceptions as exception
 
 
 def _eval(evaluate_point, calibration, stop_time):
-    return calibration, evaluate_point(calibration, stop_time=stop_time, env=None)
+    return calibration, evaluate_point(calibration, stop_time)
 
 
 class Grid(Base):

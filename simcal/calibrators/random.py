@@ -7,7 +7,7 @@ from simcal.calibrators.base import Base
 
 
 def _eval(evaluate_point, calibration, stop_time):
-    return calibration, evaluate_point(calibration, stop_time=stop_time, env=None)
+    return calibration, evaluate_point(calibration, stop_time)
 
 
 class Random(Base):
