@@ -34,4 +34,4 @@ class Base(object):
         return self.custom_data
 
     def apply_format(self, value):
-        return Value(None, value, self)
+        return Value(self.formatter, value, self)
