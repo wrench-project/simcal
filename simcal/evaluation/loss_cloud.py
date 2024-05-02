@@ -23,6 +23,9 @@ class LossCloud(BaseCalibrator):
     def find_cloud(self, evaluate_point, parameter_vector, target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
                    max_points=None,
                    iterations=None, timelimit=None, coordinator=None):
+        from simcal.coordinators import Base as Coordinator
+        if coordinator is None:
+            coordinator = Coordinator()
         if timelimit is not None:
             stoptime = time.time() + timelimit
         if iterations is not None:
