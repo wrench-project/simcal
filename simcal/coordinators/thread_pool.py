@@ -1,5 +1,6 @@
 import concurrent.futures
 import threading
+from functools import wraps
 from multiprocessing import cpu_count
 
 from simcal.coordinators import Base
@@ -25,12 +26,15 @@ class ThreadPool(Base):
     def allocate(self, func, args=(), kwds=None):
         if kwds is None:
             kwds = {}
-        while len(self.handles) >= self.pool_size:
+        while True:
+            with self.managementLock:
+                if len(self.handles) < self.pool_size:
+                    break
             with self.pool_full:
                 self.pool_full.wait()
-        handle = self.pool.submit(func, *args, **kwds)
-        handle.add_done_callback(self._callback)
         with self.managementLock:
+            handle = self.pool.submit(self._thread_wrapper, func, args, kwds)
+            handle.add_done_callback(self._callback)
             self.handles.append(handle)
         return handle
 
@@ -53,6 +57,12 @@ class ThreadPool(Base):
             with self.awaiting_result:
                 self.awaiting_result.wait()
         return self.collect()
+
+
+    def _thread_wrapper(self, func, args, kwargs):
+        with self.managementLock:
+            pass
+        return func(*args, **kwargs)
 
     def _fail(self, _):
         raise _

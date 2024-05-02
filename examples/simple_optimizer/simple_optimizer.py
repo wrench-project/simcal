@@ -23,7 +23,7 @@ class Scenario:
     def __init__(self, simulator):
         self.simulator = simulator
 
-    def __call__(self, calibration,stoptime):
+    def __call__(self, calibration, stoptime):
         unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
 
         print(calibration)
