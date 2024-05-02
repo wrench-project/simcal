@@ -8,8 +8,9 @@ from numpy import linspace
 from simcal.calibrators.base import Base
 import simcal.exceptions as exception
 
-def _eval(evaluate_point, calibration,stop_time):
-    return calibration, evaluate_point(calibration,stop_time)
+
+def _eval(evaluate_point, calibration, stop_time):
+    return calibration, evaluate_point(calibration, stop_time)
 
 
 class Grid(Base):
@@ -30,7 +31,7 @@ class Grid(Base):
                 for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
                     if time() > stop_time:
                         break
-                    coordinator.allocate(_eval, (evaluate_point, calibration,stop_time))
+                    coordinator.allocate(_eval, (evaluate_point, calibration, stop_time))
                     results = coordinator.collect()
                     for current, loss in results:
                         if loss is None:
