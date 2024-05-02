@@ -1,3 +1,4 @@
+from simcal.parameters import Value
 from simcal.parameters.ordered import Ordered
 
 
@@ -5,6 +6,11 @@ class Ordinal(Ordered):
     def __init__(self, options):
         super().__init__(0, 1)
         self.options = options
+
+    def is_valid_value(self, x: float | Value) -> bool:
+        if isinstance(x, Value):
+            x = x.value
+        return x in self.options
 
     def from_normalized(self, x: float):
         if self.from_normalize_override:

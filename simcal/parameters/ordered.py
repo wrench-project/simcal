@@ -1,5 +1,5 @@
-from simcal.parameters.value import Value
 from simcal.parameters.base import Base
+from simcal.parameters.value import Value
 
 
 class Ordered(Base):
@@ -9,6 +9,13 @@ class Ordered(Base):
         self.range_end = range_end
         self.from_normalize_override = from_normalize_override
         self.to_normalize_override = to_normalize_override
+
+    def is_valid_normalized(self, x: float) -> bool:
+        return x >= self.range_start and x <= self.range_end
+
+    def is_valid_value(self, x: float | Value) -> bool:
+        raise NotImplementedError(
+            self.__class__.__name__ + " does not define valid_parameter(self,x)")
 
     def from_normalized(self, x: float):
         if self.from_normalize_override:
@@ -22,4 +29,3 @@ class Ordered(Base):
             return self.to_normalize_override(self, x)
         raise NotImplementedError(
             self.__class__.__name__ + " does not define to_normalized(self,x) and does not have an override")
-

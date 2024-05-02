@@ -12,6 +12,9 @@ class Exponential(Ordered):
         self.start = start
         self.end = end
 
+    def is_valid_value(self, x: float | Value) -> bool:
+        return self.start <= x <= self.end
+
     def from_normalized(self, x: float) -> float | Value:
         if self.from_normalize_override:
             return self.from_normalize_override(self, x)
