@@ -1,5 +1,11 @@
+from __future__ import annotations
+
+from typing import Self, TYPE_CHECKING
+
 from simcal.parameters.base import Base
-from simcal.parameters.value import Value
+
+if TYPE_CHECKING:
+    from simcal.parameters import Value
 
 
 class Ordered(Base):
@@ -10,8 +16,12 @@ class Ordered(Base):
         self.from_normalize_override = from_normalize_override
         self.to_normalize_override = to_normalize_override
 
+    def constrain(self, new_range_start, new_range_end) -> Self:
+        raise NotImplementedError(
+            self.__class__.__name__ + " does not define constrain(self,new_range_start,new_range_end)")
+
     def is_valid_normalized(self, x: float) -> bool:
-        return x >= self.range_start and x <= self.range_end
+        return self.range_start <= x <= self.range_end
 
     def is_valid_value(self, x: float | Value) -> bool:
         raise NotImplementedError(

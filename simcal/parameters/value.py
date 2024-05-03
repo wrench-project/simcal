@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from simcal import parameters
 import json
@@ -14,7 +12,7 @@ class Value(json.JSONEncoder):
     Represents a value with a specific format for string representation.
     """
 
-    def __init__(self, formatter: str | None, value: int | float, parameter: parameters.base) -> None:
+    def __init__(self, formatter: str | None, value: int | float, parameter: parameters.Base) -> None:
         """
         Initializes the _FormattedValue instance.
 

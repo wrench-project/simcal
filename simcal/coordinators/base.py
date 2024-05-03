@@ -15,7 +15,9 @@ class Base(object):
         self.handles.append(func(*args, **kwds))
 
     def collect(self):
-        return [h for h in self.handles]
+        ret = [h for h in self.handles]
+        self.handles = []
+        return ret
 
     def await_result(self):
         return self.collect()
