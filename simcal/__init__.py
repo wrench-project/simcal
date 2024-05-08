@@ -6,6 +6,7 @@ import simcal.parameters as parameter
 import simcal.parameters as parameters
 import simcal.exceptions as exceptions
 import simcal.exceptions as exception
+import simcal.evaluation as evaluation
 
 from simcal.environment import Environment
 from simcal.simulator import Simulator
@@ -21,5 +22,6 @@ __all__ = [
     "parameters",
     "bash",
     "exceptions",
-    "exception"
+    "exception",
+    "evaluation"
 ]

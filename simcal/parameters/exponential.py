@@ -1,8 +1,14 @@
-import math
+from __future__ import annotations
 
-from simcal.parameters.value import Value
+import math
+from typing import Self
+from typing import TYPE_CHECKING
+
 from simcal.parameters.ordered import Ordered
 from simcal.utility_functions import safe_exp2
+
+if TYPE_CHECKING:
+    from simcal.parameters import Value
 
 
 class Exponential(Ordered):
@@ -11,6 +17,20 @@ class Exponential(Ordered):
         super().__init__(0, 1)
         self.start = start
         self.end = end
+
+    def constrain(self, new_range_start: float | Value, new_range_end: float | Value) -> Self:
+        from simcal.parameters import Value
+        if isinstance(new_range_start, Value):
+            new_range_start = new_range_start.value
+        if isinstance(new_range_end, Value):
+            new_range_end = new_range_end.value
+        ret = Exponential(new_range_start, new_range_end)
+        ret.range_start = self.range_start
+        ret.range_end = self.range_end
+        return ret
+
+    def is_valid_value(self, x: float | Value) -> bool:
+        return self.start <= x <= self.end
 
     def from_normalized(self, x: float) -> float | Value:
         if self.from_normalize_override:
