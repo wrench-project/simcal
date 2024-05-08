@@ -17,6 +17,8 @@ class GradientDescent(sc.Base):
 
     def _populate(self, param_vector, vector_mapping, categoricals):
         args = categoricals.copy()
+        param_vector = param_vector.copy()
+        self._clamp_vector(param_vector, vector_mapping)
         for i, key in enumerate(vector_mapping):
             args[key] = self._ordered_params[key].from_normalized(param_vector[i])
         return args
