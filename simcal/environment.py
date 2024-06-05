@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import sys
 import tempfile
 import time
 from typing import Self
@@ -134,7 +135,7 @@ class Environment(object):
         self._file_stack = list()
 
         for tmp in self._dir_stack:
-            tmp.cleanup()
+                tmp.cleanup()
         self._dir_stack = list()
 
     # TODO document things under here
@@ -157,7 +158,12 @@ class Environment(object):
         return self
 
     def __exit__(self, exception_type, exception_value, exception_traceback):
-        self.cleanup()
+        while True: # In theory this resists the crash that leaves uncleaned up files
+            try:
+                self.cleanup()
+                break
+            except KeyboardInterrupt:
+                print("Cleaning up temp files, Keyboard Interrupt ignored", file=sys.stderr)
 
     def timeout_shortout(self):
         if self.stoptime is not None:
