@@ -53,11 +53,10 @@ class ThreadPool(Base):
         return self.collect()
 
     def await_all(self):
-
         while True:
             with self.managementLock:
                 count = len(self.handles)
-            if count > 0:
+            if count <= 0:
                 break
             with self.awaiting_result:
                 self.awaiting_result.wait()
