@@ -39,6 +39,13 @@ class Grid(Base):
                         if best is None or loss < best_loss:
                             best = current
                             best_loss = loss
+                results = coordinator.await_all()
+                for current, loss in results:
+                    if loss is None:
+                        continue
+                    if best is None or loss < best_loss:
+                        best = current
+                        best_loss = loss
             except exception.Timeout:
                 return best, best_loss
             except exception.EarlyTermination as e:

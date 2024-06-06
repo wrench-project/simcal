@@ -56,7 +56,7 @@ class ThreadPool(Base):
 
         while True:
             with self.managementLock:
-                count = self.handles
+                count = len(self.handles)
             if count > 0:
                 break
             with self.awaiting_result:

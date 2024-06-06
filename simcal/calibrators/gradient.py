@@ -66,8 +66,8 @@ class GradientDescent(sc.Base):
                             categoricals[param[0]] = param[1]
                             loss = self._evaluate_vector(evaluate_point, param_vector, vector_mapping, categoricals,
                                                          stop_time)
-                            # print("checking categoricals", loss)
-                            if best_c_loss is None or best_c_loss > loss:
+                            #print("checking categoricals", loss)
+                            if best_c_loss is None or loss < best_c_loss:
                                 best_categorical = categoricals.copy()
                                 best_c_loss = loss
                     else:
@@ -75,14 +75,14 @@ class GradientDescent(sc.Base):
                         best_c_loss = self._evaluate_vector(evaluate_point, param_vector, vector_mapping,
                                                             best_categorical, stop_time)
 
-                if best_loss is None or best_loss < best_c_loss:
+                if best_loss is None or best_c_loss < best_loss:
                     best_loss = best_c_loss
                     best = self._populate(param_vector, vector_mapping, best_categorical)
                 if self.early_reject_loss is not None and best_loss >= self.early_reject_loss:
                     break
                 # print("finding gradient")
                 loss_at_param = best_c_loss
-                # print("after categoricals, best loss is ", loss_at_param)
+                #print("after categoricals, best loss is ", loss_at_param)
                 # find gradient
                 gradient = np.empty(dimensions)
                 for i in range(dimensions):
@@ -98,11 +98,11 @@ class GradientDescent(sc.Base):
                     direction_loss = self._evaluate_vector(evaluate_point, tmp_vector, vector_mapping, best_categorical,
                                                            stop_time)
                     gradient[i] = (direction_loss - loss_at_param) / self.delta * multiplier
-                    # print("loss while finding gradient", direction_loss)
+                    #print("loss while finding gradient", direction_loss)
                     if direction_loss < best_loss:
                         best_loss = direction_loss
                         best = self._populate(tmp_vector, vector_mapping, best_categorical)
-                # print("Best loss before backtracking", best_loss)
+                #print("Best loss before backtracking", best_loss)
                 # [xi+1]=xi+norm_gradient*scale
                 # h(xi)=f(xi)+gradient(dot)(xi-[xi+1])
                 # h(xi)=f(xi)+gradient(dot)norm_gradient*scale
@@ -123,19 +123,18 @@ class GradientDescent(sc.Base):
 
                     actual = self._evaluate_vector(evaluate_point, backtrack_test, vector_mapping, best_categorical,
                                                    stop_time)
-                    # print("backtracking", actual)
+                    #print("backtracking", actual)
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
+                        in_minima = True
                     if last_check:
                         break
-                    if actual < best_loss:  # We are in a minima
-                        in_minima = True
-                    elif in_minima:  # And Going up the other side
+                    if in_minima and actual > best_loss:  # in a minima And Going up the other side
                         last_check = True
                     if actual - loss_at_param < self.epsilon:  # we arent making any progress at all
                         last_check = True
-                        # print("Just 1 more check")
+                        #print("Just 1 more check")
                     backtrack /= 2
                 # update learning rate
                 learning_rate = backtrack
@@ -150,12 +149,12 @@ class GradientDescent(sc.Base):
                 e.result = (best, best_loss)
             raise e
         except exception.Timeout:
-            # print("best loss, Timed out", best_loss)
+            #print("best loss, Timed out", best_loss)
             return best, best_loss
         except BaseException as e:
-            # print("best loss, EXCEPTION!", best_loss)
+            #("best loss, EXCEPTION!", best_loss)
             raise exception.EarlyTermination((best, best_loss), e)
-        # print("best loss", best_loss)
+        #print("best loss", best_loss)
         return best, best_loss
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
@@ -164,7 +163,7 @@ class GradientDescent(sc.Base):
             internal = sc.Grid()
         else:
             internal = sc.Random(self.seed)
-        # print("starting new gradient")
+        #print("starting new gradient")
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
