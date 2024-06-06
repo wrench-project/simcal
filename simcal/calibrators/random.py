@@ -64,7 +64,7 @@ class Random(Base):
                     best = current
                     best_loss = loss
         except exception.Timeout:
-            print("Random had to catch a timeout")
+            #print("Random had to catch a timeout")
             return best, best_loss
         except exception.EarlyTermination as e:
             ebest, eloss = e.result
