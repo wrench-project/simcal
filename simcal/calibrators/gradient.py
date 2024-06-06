@@ -66,6 +66,7 @@ class GradientDescent(sc.Base):
                             categoricals[param[0]] = param[1]
                             loss = self._evaluate_vector(evaluate_point, param_vector, vector_mapping, categoricals,
                                                          stop_time)
+                            # print("checking categoricals", loss)
                             if best_c_loss is None or best_c_loss > loss:
                                 best_categorical = categoricals.copy()
                                 best_c_loss = loss
@@ -81,6 +82,7 @@ class GradientDescent(sc.Base):
                     break
                 # print("finding gradient")
                 loss_at_param = best_c_loss
+                # print("after categoricals, best loss is ", loss_at_param)
                 # find gradient
                 gradient = np.empty(dimensions)
                 for i in range(dimensions):
@@ -96,10 +98,11 @@ class GradientDescent(sc.Base):
                     direction_loss = self._evaluate_vector(evaluate_point, tmp_vector, vector_mapping, best_categorical,
                                                            stop_time)
                     gradient[i] = (direction_loss - loss_at_param) / self.delta * multiplier
+                    # print("loss while finding gradient", direction_loss)
                     if direction_loss < best_loss:
                         best_loss = direction_loss
                         best = self._populate(tmp_vector, vector_mapping, best_categorical)
-
+                # print("Best loss before backtracking", best_loss)
                 # [xi+1]=xi+norm_gradient*scale
                 # h(xi)=f(xi)+gradient(dot)(xi-[xi+1])
                 # h(xi)=f(xi)+gradient(dot)norm_gradient*scale
@@ -110,6 +113,7 @@ class GradientDescent(sc.Base):
                 # why is scikit normalize so werid?  just take a 1d vector and return a scaler!
                 backtrack = learning_rate * 10
                 last_check = False
+                in_minima = False
                 while True:
                     gradient_step = grad_norm * backtrack
                     backtrack_test = param_vector + gradient_step
@@ -119,11 +123,16 @@ class GradientDescent(sc.Base):
 
                     actual = self._evaluate_vector(evaluate_point, backtrack_test, vector_mapping, best_categorical,
                                                    stop_time)
+                    # print("backtracking", actual)
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
                     if last_check:
                         break
+                    if actual < best_loss:  # We are in a minima
+                        in_minima = True
+                    elif in_minima:  # And Going up the other side
+                        last_check = True
                     if actual - loss_at_param < self.epsilon:  # we arent making any progress at all
                         last_check = True
                         # print("Just 1 more check")
@@ -141,9 +150,12 @@ class GradientDescent(sc.Base):
                 e.result = (best, best_loss)
             raise e
         except exception.Timeout:
+            # print("best loss, Timed out", best_loss)
             return best, best_loss
         except BaseException as e:
+            # print("best loss, EXCEPTION!", best_loss)
             raise exception.EarlyTermination((best, best_loss), e)
+        # print("best loss", best_loss)
         return best, best_loss
 
     def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
