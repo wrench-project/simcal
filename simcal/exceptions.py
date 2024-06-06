@@ -4,8 +4,8 @@ class Base(RuntimeError):
 
 class EarlyTermination(Base):
     def __init__(self, result, exception):
-        super().__init__("A Calibrator Ended Early.  Possible due to a timelimit being reached, "
-                         "or possibly because of an error in the simulator.\n\tReturned Result%s" % (result,))
+        super().__init__("An Unexpected Exception was Thrown durring Calibration, but the calibration may "
+                         "be salvageable.\n\tReturned Result:%s" % (result,))
         self.result = result
         self.exception = exception
 

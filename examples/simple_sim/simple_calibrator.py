@@ -19,7 +19,7 @@ class ExampleSimulator(sc.Simulator):
 
     def run(self, env, args):
         cmdargs = [simple_sim / "simple_simulator.py"] + list(args[0]) + list(args[1]) + [self.time]
-        std_out, std_err, exit_code = sc.bash("python3", cmdargs, )
+        std_out, std_err, exit_code = env.bash("python3", cmdargs, )
         if std_err:
             print(std_out, std_err, exit_code)
         return float(std_out.strip().split("\n")[-1])
