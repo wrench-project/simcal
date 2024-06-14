@@ -16,27 +16,12 @@ class ExampleSimulator(sc.Simulator):
 
     def run(self, env, args):
         sleep(self.time)
-        return pow(args[0] - 10, 2) + pow(args[1] - 4, 2) + pow(args[2] - 5, 2) + pow(args[3] - 3, 2)
+        return pow(args["a"] - 10, 2) + pow(args["b"] - 4, 2) + pow(args["c"] - 5, 2) + pow(args["d"] - 3, 2)
 
 
-class Scenario:
-    def __init__(self, simulator):
-        self.simulator = simulator
-
-    def __call__(self, calibration, stoptime):
-        try:
-            unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
-        except :
-            print(calibration)
-            raise
-        #print(calibration)
-        ret = self.simulator(unpacked)
-        #print(ret)
-        return ret
 
 
 simulator = ExampleSimulator(0)
-scenario1 = Scenario(simulator)
 
 coordinator = sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinator is optional, and only needed if you
 
@@ -46,7 +31,7 @@ evaluator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
 evaluator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
 evaluator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 # scenario1({'a': 10, 'b': 4, 'c': 5, 'd': 3}, 0)
-print(evaluator.find_cloud(scenario1, {'a': 10, 'b': 4, 'c': 5, 'd': 3},
+print(evaluator.find_cloud(simulator, {'a': 10, 'b': 4, 'c': 5, 'd': 3},
                            1, 10, .1, 0.3,
                            timelimit=60))  # , coordinator=coordinator))
 # def find_cloud(self, evaluate_point, parameter_vector, target_loss, hypercube_loss, loss_tolerance, initial_epsilon,

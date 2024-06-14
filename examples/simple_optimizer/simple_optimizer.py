@@ -15,27 +15,14 @@ class ExampleSimulator(sc.Simulator):
         self.time = time
 
     def run(self, env, args):
+        print(args)
         sleep(self.time)
-        return pow(args[0] - 10, 2) + pow(args[1] - 4, 2) + pow(args[2] - 5, 2) + pow(args[3] - 3, 2)
-
-
-class Scenario:
-    def __init__(self, simulator):
-        self.simulator = simulator
-
-
-    def __call__(self, calibration, stoptime):
-        unpacked = (calibration["a"], calibration["b"], calibration["c"], calibration["d"])
-
-        print(calibration)
-        ret = self.simulator(unpacked)
+        ret = pow(args["a"] - 10, 2) + pow(args["b"] - 4, 2) + pow(args["c"] - 5, 2) + pow(args["d"] - 3, 2)
         print(ret)
         return ret
 
 
-
 simulator = ExampleSimulator(10)
-scenario1 = Scenario(simulator)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 # calibrator = sc.calibrators.Grid()
@@ -47,10 +34,10 @@ calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
 calibrator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
 calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
-coordinator = sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinator is optional, and only needed if you
+coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 start = time()
-calibration, loss = calibrator.calibrate(scenario1, timelimit=60, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(simulator, timelimit=60, coordinator=coordinator)
 print("final calibration")
 print(calibration)
 print(loss)

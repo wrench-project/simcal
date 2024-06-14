@@ -19,8 +19,8 @@ class ExampleSimulator(sc.Simulator):
         self.ground_truth = ground_truth
         self.loss_function = loss
 
-    def single_simulation(self, env, args):
-        cmdargs = [simple_sim / "simple_simulator.py"] + list(args[0]) + list(args[1]) + [self.time]
+    def single_simulation(self, env, x, args):
+        cmdargs = [simple_sim / "simple_simulator.py"] + list(x) + list(args) + [self.time]
         std_out, std_err, exit_code = env.bash("python3", cmdargs, )
         if std_err:
             print(std_out, std_err, exit_code)
@@ -32,7 +32,7 @@ class ExampleSimulator(sc.Simulator):
         res = []
         # Run simulator for all known ground truth points
         for x in self.ground_truth[0]:
-            res.append(self.single_simulation(env, (x, unpacked)))
+            res.append(self.single_simulation(env, x, unpacked))
         ret = self.loss_function(res, self.ground_truth[1])
         print(ret)
         return ret
