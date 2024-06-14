@@ -5,19 +5,20 @@ from time import time
 
 from numpy import linspace
 
+import simcal.simulator as Simulator
 from simcal.calibrators.base import Base
 import simcal.exceptions as exception
 
 
-def _eval(evaluate_point, calibration, stop_time):
-    return calibration, evaluate_point(calibration, stop_time)
+def _eval(simulator: Simulator, calibration, stop_time):
+    return calibration, simulator(calibration, stop_time)
 
 
 class Grid(Base):
     def __init__(self):
         super().__init__()
 
-    def calibrate(self, evaluate_point, early_stopping_loss=None, step_override=None, iterations=None,
+    def calibrate(self, simulator: Simulator, early_stopping_loss=None, step_override=None, iterations=None,
                   timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
@@ -31,7 +32,7 @@ class Grid(Base):
                 for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
                     if time() > stop_time:
                         break
-                    coordinator.allocate(_eval, (evaluate_point, calibration, stop_time))
+                    coordinator.allocate(_eval, (simulator, calibration, stop_time))
                     results = coordinator.collect()
                     for current, loss in results:
                         if loss is None:

@@ -1,5 +1,6 @@
 from simcal.parameters import Ordered
 from simcal.parameters import Categorical
+import simcal.simulator as Simulator
 
 
 class Base(object):
@@ -7,11 +8,11 @@ class Base(object):
         self._ordered_params = {}
         self._categorical_params = {}
 
-    def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None, timelimit=None, coordinator=None):
-        raise NotImplementedError(f"{self.__class__.__name__} does not define calibrate(self, evaluate_point, "
+    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None, timelimit=None, coordinator=None):
+        raise NotImplementedError(f"{self.__class__.__name__} does not define calibrate(self, simulator, "
                                   f"compute_loss, reference_data, iterations=None, timeout=None)")
 
-    def add_param(self, name:str, parameter: Ordered | Categorical):
+    def add_param(self, name: str, parameter: Ordered | Categorical):
         """
         Method to add a to-be-calibrated parameter
         :param name: a user-defined parameter name

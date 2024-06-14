@@ -2,11 +2,12 @@ import random
 import sys
 from time import time
 
+import simcal.simulator as Simulator
 from simcal.calibrators.base import Base
 
 
-def _eval(evaluate_point, calibration):
-    return evaluate_point(calibration), calibration
+def _eval(simulator, calibration):
+    return simulator(calibration), calibration
 
 
 class Debug(Base):
@@ -17,9 +18,9 @@ class Debug(Base):
     def log(self, *args, **kwargs):
         print(*args, file=self.logger, **kwargs)
 
-    def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
+    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
-        self.log("Calibrate", (evaluate_point, early_stopping_loss, iterations, timelimit, coordinator))
+        self.log("Calibrate", (simulator, early_stopping_loss, iterations, timelimit, coordinator))
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
         if coordinator is None:
@@ -36,7 +37,7 @@ class Debug(Base):
 
         self.log("Attempting execution", calibration)
         t0 = time()
-        coordinator.allocate(_eval, (evaluate_point, calibration))
+        coordinator.allocate(_eval, (simulator, calibration))
         results = coordinator.await_result()
         t1 = time()
         self.log("Finished, Time taken:", t1 - t0, "results:")

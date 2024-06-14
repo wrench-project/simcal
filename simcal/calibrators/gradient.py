@@ -5,6 +5,7 @@ from sklearn.preprocessing import normalize
 
 import simcal.calibrators as sc
 import simcal.exceptions as exception
+import simcal.simulator as Simulator
 
 
 class GradientDescent(sc.Base):
@@ -23,10 +24,10 @@ class GradientDescent(sc.Base):
             args[key] = self._ordered_params[key].from_normalized(param_vector[i])
         return args
 
-    def _evaluate_vector(self, evaluate_point, param_vector, vector_mapping, categoricals, stop_time):
+    def _evaluate_vector(self, simulator: Simulator, param_vector, vector_mapping, categoricals, stop_time):
         args = self._populate(param_vector, vector_mapping, categoricals, )
         self._timeout_shortout(stop_time)
-        return evaluate_point(args, stop_time)
+        return simulator(args, stop_time)
 
     def _clamp_vector(self, param_vector, vector_mapping):
         for i in range(len(param_vector)):
@@ -37,7 +38,7 @@ class GradientDescent(sc.Base):
     def _get_raw_param(self, index, vector_mapping):
         return self._ordered_params[vector_mapping[index]]
 
-    def descend(self, evaluate_point, initial_point, stop_time):
+    def descend(self, simulator: Simulator, initial_point, stop_time):
         # TODO (later) gracefully handle early stops
 
         if not self._categorical_params:
@@ -64,7 +65,7 @@ class GradientDescent(sc.Base):
                     if c is not None:  # determin best categoricals at this point
                         for param in c:  # repackage categorical params for calibrator
                             categoricals[param[0]] = param[1]
-                            loss = self._evaluate_vector(evaluate_point, param_vector, vector_mapping, categoricals,
+                            loss = self._evaluate_vector(simulator, param_vector, vector_mapping, categoricals,
                                                          stop_time)
                             #print("checking categoricals", loss)
                             if best_c_loss is None or loss < best_c_loss:
@@ -72,7 +73,7 @@ class GradientDescent(sc.Base):
                                 best_c_loss = loss
                     else:
                         best_categorical = {}
-                        best_c_loss = self._evaluate_vector(evaluate_point, param_vector, vector_mapping,
+                        best_c_loss = self._evaluate_vector(simulator, param_vector, vector_mapping,
                                                             best_categorical, stop_time)
 
                 if best_loss is None or best_c_loss < best_loss:
@@ -95,7 +96,7 @@ class GradientDescent(sc.Base):
                         multiplier = -1
 
                     tmp_vector[i] += self.delta * multiplier
-                    direction_loss = self._evaluate_vector(evaluate_point, tmp_vector, vector_mapping, best_categorical,
+                    direction_loss = self._evaluate_vector(simulator, tmp_vector, vector_mapping, best_categorical,
                                                            stop_time)
                     gradient[i] = (direction_loss - loss_at_param) / self.delta * multiplier
                     #print("loss while finding gradient", direction_loss)
@@ -121,7 +122,7 @@ class GradientDescent(sc.Base):
                     # expected = loss_at_param + gradient.dot(gradient_step)
                     # this simplifies out since we only check if we are going uphill to decide to backtrack
 
-                    actual = self._evaluate_vector(evaluate_point, backtrack_test, vector_mapping, best_categorical,
+                    actual = self._evaluate_vector(simulator, backtrack_test, vector_mapping, best_categorical,
                                                    stop_time)
                     #print("backtracking", actual)
                     if actual < best_loss:
@@ -157,7 +158,7 @@ class GradientDescent(sc.Base):
         #print("best loss", best_loss)
         return best, best_loss
 
-    def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
+    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         if len(self._ordered_params) <= 0:
             internal = sc.Grid()
@@ -167,14 +168,14 @@ class GradientDescent(sc.Base):
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
-            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
+            return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
             if timelimit is None:
                 stop_time = None
             else:
                 stop_time = time.time() + timelimit
             internal._eval = self.descend
-            return internal.calibrate(evaluate_point, early_stopping_loss, iterations, timelimit, coordinator)
+            return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
 
     def _timeout_shortout(self, stoptime):
         if stoptime is not None:
@@ -185,9 +186,9 @@ class GradientDescent(sc.Base):
 
 # class _GradientFunctor(object):
 #    # this lets use use random search.  we make a functor with access the gradient descent, then we let random call the functor, which calls the descent function in gradient descent, which in turn calls the actual functor given to us
-#    def __init__(self, grad, evaluate_point):
+#    def __init__(self, grad, simulator):
 #        self.grad = grad
-#        self.evaluate_point = evaluate_point
+#        self.simulator = simulator
 #
 #    def __call__(self, calibration):
-#        return self.grad.descend(self.evaluate_point, calibration)
+#        return self.grad.descend(self.simulator, calibration)

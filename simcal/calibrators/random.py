@@ -2,12 +2,13 @@ import random
 from itertools import count
 from time import time
 import simcal.exceptions as exception
+import simcal.simulator as Simulator
 
 from simcal.calibrators.base import Base
 
 
-def _eval(evaluate_point, calibration, stop_time):
-    return calibration, evaluate_point(calibration, stop_time)
+def _eval(simulator: Simulator, calibration, stop_time):
+    return calibration, simulator(calibration, stop_time)
 
 
 class Random(Base):
@@ -17,7 +18,7 @@ class Random(Base):
             random.seed(seed)
         self._eval = _eval
 
-    def calibrate(self, evaluate_point, early_stopping_loss=None, iterations=None,
+    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
@@ -46,7 +47,7 @@ class Random(Base):
                 for key in self._categorical_params:
                     calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
-                coordinator.allocate(self._eval, (evaluate_point, calibration, stop_time))
+                coordinator.allocate(self._eval, (simulator, calibration, stop_time))
                 results = coordinator.collect()
                 for current, loss in results:
                     if loss is None:

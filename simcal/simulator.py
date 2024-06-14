@@ -11,33 +11,16 @@ class Simulator(object):
     def __init__(self, coordinator=None):
         self.coordinator = coordinator
 
-    def run(self, env: Environment, args) -> Any:
+    def run(self, env: Environment, args: Any) -> float:
         raise NotImplementedError("Simulator.run(self,env,args) must be user defined")
 
-    def __call__(self, args, stoptime: int | float | None = None, env: Environment | None = None):  # handle async stuff
-        if env is None:
-            environment = _EnvManager(True, Environment(stoptime=stoptime))
-        else:
-            environment = _EnvManager(False, env)
-            if stoptime is not None:
-                env.stoptime = stoptime
-        with environment:
+    def __call__(self, args: Any, stoptime: int | float | None = None):  # handle async stuff
+
+        env = Environment(stoptime=stoptime)
+        with env:
             # self.setup(env)
-            ret = self.run(environment.env, args)
+            ret = self.run(env, args)
             # handler = Handler(self, env)
             # ret=self.extract(env)
             # self.cleanup(env)
             return ret
-
-
-class _EnvManager(object):
-    def __init__(self, cleanup, env):
-        self.cleanup = cleanup
-        self.env = env
-
-    def __enter__(self):
-        return self.env
-
-    def __exit__(self, exception_type, exception_value, exception_traceback):
-        if (self.cleanup):
-            self.env.cleanup()
