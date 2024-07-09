@@ -32,7 +32,7 @@ setup(
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.11',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
@@ -40,5 +40,5 @@ setup(
         'Topic :: Documentation :: Sphinx',
         'Topic :: System :: Distributed Computing'
     ],
-    python_requires='>=3.12'
+    python_requires='>=3.11,<3.12'
 )
