@@ -58,7 +58,7 @@ class LossCloud(BaseCalibrator):
         print(upper_bound)
         cloud_points += self.search_cube(simulator, lower_bound, upper_bound, parameter_vector, target_loss,
                                          max_points=max_points,
-                                         iterations=iterations_remaining, stop_time=stoptime, coordinator=coordinator)
+                                         iterations=iterations_remaining, stoptime=stoptime, coordinator=coordinator)
         return cloud_points
 
     def find_cube_bound(self, direction, simulator: Simulator, center, target_loss, hypercube_loss, loss_tolerance,
@@ -158,7 +158,7 @@ class LossCloud(BaseCalibrator):
         return current, param_key, recommended_epsilon, cloud_points, iterations
 
     def search_cube(self, simulator: Simulator, lower_bound, upper_bound, center, target_loss,
-                    max_points=None, iterations=None, stop_time=None, coordinator=None):
+                    max_points=None, iterations=None, stoptime=None, coordinator=None):
         categorical = {}
 
         for key in self._categorical_params:
@@ -167,12 +167,12 @@ class LossCloud(BaseCalibrator):
         for key, value in self._ordered_params.items():
             ordered[key] = self._ordered_params[key].constrain(lower_bound[key], upper_bound[key])
         cloud_points = []
-        if stop_time is not None:
+        if stoptime is not None:
             try:
                 for calibration in _RectangularIterator(ordered, categorical):
-                    if time.time() > stop_time:
+                    if time.time() > stoptime:
                         break
-                    coordinator.allocate(_eval, (simulator, calibration, stop_time))
+                    coordinator.allocate(_eval, (simulator, calibration, stoptime))
                     results = coordinator.collect()
                     print(results)
                     for current, loss in results:
@@ -191,8 +191,8 @@ class LossCloud(BaseCalibrator):
         return cloud_points
 
 
-def _eval(simulator, calibration, stop_time):
-    return calibration, simulator(calibration, stop_time)
+def _eval(simulator, calibration, stoptime):
+    return calibration, simulator(calibration, stoptime)
 
 
 class _Direction(Enum):

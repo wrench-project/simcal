@@ -7,8 +7,8 @@ import simcal.simulator as Simulator
 from simcal.calibrators.base import Base
 
 
-def _eval(simulator: Simulator, calibration, stop_time):
-    return calibration, simulator(calibration, stop_time)
+def _eval(simulator: Simulator, calibration, stoptime):
+    return calibration, simulator(calibration, stoptime)
 
 
 class Random(Base):
@@ -27,16 +27,16 @@ class Random(Base):
         best = None
         best_loss = None
         if timelimit is None:
-            stop_time = float('inf')
+            stoptime = float('inf')
         else:
-            stop_time = time() + timelimit
+            stoptime = time() + timelimit
         if iterations is None:
             itr = count(start=0, step=1)
         else:
             itr = range(0, iterations)
         try:
             for i in itr:
-                if time() > stop_time:
+                if time() > stoptime:
                     break
 
                 calibration = {}
@@ -47,7 +47,7 @@ class Random(Base):
                 for key in self._categorical_params:
                     calibration[key] = random.choice(self._categorical_params[key].get_categories())
 
-                coordinator.allocate(self._eval, (simulator, calibration, stop_time))
+                coordinator.allocate(self._eval, (simulator, calibration, stoptime))
                 results = coordinator.collect()
                 for current, loss in results:
                     if loss is None:

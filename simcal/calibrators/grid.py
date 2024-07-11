@@ -10,8 +10,8 @@ from simcal.calibrators.base import Base
 import simcal.exceptions as exception
 
 
-def _eval(simulator: Simulator, calibration, stop_time):
-    return calibration, simulator(calibration, stop_time)
+def _eval(simulator: Simulator, calibration, stoptime):
+    return calibration, simulator(calibration, stoptime)
 
 
 class Grid(Base):
@@ -29,11 +29,11 @@ class Grid(Base):
 
         if timelimit is not None:
             try:
-                stop_time = time() + timelimit
+                stoptime = time() + timelimit
                 for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
-                    if time() > stop_time:
+                    if time() > stoptime:
                         break
-                    coordinator.allocate(_eval, (simulator, calibration, stop_time))
+                    coordinator.allocate(_eval, (simulator, calibration, stoptime))
                     results = coordinator.collect()
                     for current, loss in results:
                         if loss is None:

@@ -24,10 +24,10 @@ class GradientDescent(sc.Base):
             args[key] = self._ordered_params[key].from_normalized(param_vector[i])
         return args
 
-    def _evaluate_vector(self, simulator: Simulator, param_vector, vector_mapping, categoricals, stop_time):
+    def _evaluate_vector(self, simulator: Simulator, param_vector, vector_mapping, categoricals, stoptime):
         args = self._populate(param_vector, vector_mapping, categoricals, )
-        self._timeout_shortout(stop_time)
-        return simulator(args, stop_time)
+        self._timeout_shortout(stoptime)
+        return simulator(args, stoptime)
 
     def _clamp_vector(self, param_vector, vector_mapping):
         for i in range(len(param_vector)):
@@ -38,7 +38,7 @@ class GradientDescent(sc.Base):
     def _get_raw_param(self, index, vector_mapping):
         return self._ordered_params[vector_mapping[index]]
 
-    def descend(self, simulator: Simulator, initial_point, stop_time):
+    def descend(self, simulator: Simulator, initial_point, stoptime):
         # TODO (later) gracefully handle early stops
 
         if not self._categorical_params:
@@ -66,7 +66,7 @@ class GradientDescent(sc.Base):
                         for param in c:  # repackage categorical params for calibrator
                             categoricals[param[0]] = param[1]
                             loss = self._evaluate_vector(simulator, param_vector, vector_mapping, categoricals,
-                                                         stop_time)
+                                                         stoptime)
                             #print("checking categoricals", loss)
                             if best_c_loss is None or loss < best_c_loss:
                                 best_categorical = categoricals.copy()
@@ -74,7 +74,7 @@ class GradientDescent(sc.Base):
                     else:
                         best_categorical = {}
                         best_c_loss = self._evaluate_vector(simulator, param_vector, vector_mapping,
-                                                            best_categorical, stop_time)
+                                                            best_categorical, stoptime)
 
                 if best_loss is None or best_c_loss < best_loss:
                     best_loss = best_c_loss
@@ -97,7 +97,7 @@ class GradientDescent(sc.Base):
 
                     tmp_vector[i] += self.delta * multiplier
                     direction_loss = self._evaluate_vector(simulator, tmp_vector, vector_mapping, best_categorical,
-                                                           stop_time)
+                                                           stoptime)
                     gradient[i] = (direction_loss - loss_at_param) / self.delta * multiplier
                     #print("loss while finding gradient", direction_loss)
                     if direction_loss < best_loss:
@@ -123,7 +123,7 @@ class GradientDescent(sc.Base):
                     # this simplifies out since we only check if we are going uphill to decide to backtrack
 
                     actual = self._evaluate_vector(simulator, backtrack_test, vector_mapping, best_categorical,
-                                                   stop_time)
+                                                   stoptime)
                     #print("backtracking", actual)
                     if actual < best_loss:
                         best_loss = actual
@@ -171,9 +171,9 @@ class GradientDescent(sc.Base):
             return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
             if timelimit is None:
-                stop_time = None
+                stoptime = None
             else:
-                stop_time = time.time() + timelimit
+                stoptime = time.time() + timelimit
             internal._eval = self.descend
             return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
 
