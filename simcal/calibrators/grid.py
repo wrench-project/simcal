@@ -26,6 +26,7 @@ class Grid(Base):
             coordinator = Coordinator()
         best = None
         best_loss = None
+
         if timelimit is not None:
             try:
                 stop_time = time() + timelimit
