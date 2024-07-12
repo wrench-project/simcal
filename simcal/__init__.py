@@ -12,6 +12,7 @@ from simcal.environment import Environment
 from simcal.simulator import Simulator
 from simcal.utility_functions import bash
 
+from simcal.strict_type_checking.strict_type_checking import strict_typing
 __all__ = [
     "Simulator",
     "calibrator",
@@ -23,5 +24,8 @@ __all__ = [
     "bash",
     "exceptions",
     "exception",
-    "evaluation"
+    "evaluation",
+    "strict_typing"
 ]
+
+
