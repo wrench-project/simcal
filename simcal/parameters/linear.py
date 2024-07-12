@@ -10,8 +10,11 @@ if TYPE_CHECKING:
 
 
 class Linear(Ordered):  # requires testing
-    def __init__(self, start, end):
-        super().__init__(0, 1)
+    def __init__(self, start, end, integer=False):
+        super().__init__(0, 1, integer=integer)
+        if self.integer:
+            start = int(start)
+            end = int(end)
         self.start = start
         self.end = end
 
@@ -22,7 +25,7 @@ class Linear(Ordered):  # requires testing
         if isinstance(new_range_end, Value):
             new_range_end = new_range_end.value
 
-        ret = Linear(new_range_start, new_range_end)
+        ret = Linear(new_range_start, new_range_end,self.integer)
         ret.range_start = self.range_start
         ret.range_end = self.range_end
         return ret
@@ -35,9 +38,13 @@ class Linear(Ordered):  # requires testing
             return self.from_normalize_override(self, x)
         x_normal = (x - self.range_start) / (self.range_end - self.range_start)
         value = x_normal * (self.end - self.start) + self.start
+        if self.integer:
+            value = int(value)
         return self.apply_format(value)
 
     def to_normalized(self, x: float):
+        if self.integer:
+            x = int(x)
         if self.to_normalize_override:
             return self.to_normalize_override(self, x)
         x_normal = (x - self.start) / (self.end - self.start)

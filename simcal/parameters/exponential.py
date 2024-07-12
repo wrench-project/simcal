@@ -13,8 +13,11 @@ if TYPE_CHECKING:
 
 class Exponential(Ordered):
     # start and end are in exponent terms
-    def __init__(self, start, end, from_normalize_override=None, to_normalize_override=None):
-        super().__init__(0, 1)
+    def __init__(self, start, end, integer=False):
+        super().__init__(0, 1, integer=integer)
+        if self.integer:
+            start = int(start)
+            end = int(end)
         self.start = start
         self.end = end
 
@@ -24,7 +27,7 @@ class Exponential(Ordered):
             new_range_start = new_range_start.value
         if isinstance(new_range_end, Value):
             new_range_end = new_range_end.value
-        ret = Exponential(new_range_start, new_range_end)
+        ret = Exponential(new_range_start, new_range_end,self.integer)
         ret.range_start = self.range_start
         ret.range_end = self.range_end
         return ret
@@ -37,9 +40,13 @@ class Exponential(Ordered):
             return self.from_normalize_override(self, x)
         x_normal = (x - self.range_start) / (self.range_end - self.range_start)
         value = safe_exp2(x_normal * (self.end - self.start) + self.start)
+        if self.integer:
+            value = int(value)
         return self.apply_format(value)
 
     def to_normalized(self, x: float):
+        if self.integer:
+            x = int(x)
         if self.to_normalize_override:
             return self.to_normalize_override(self, x)
         x_normal = (math.log2(x) - self.start) / (self.end - self.start)
