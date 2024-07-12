@@ -49,7 +49,7 @@ def check_arg_type(arg, arg_type, aux):
         return True
 
 
-def type_checked(func):
+def strict_typing(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
 
