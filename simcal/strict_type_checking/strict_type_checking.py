@@ -24,7 +24,7 @@ def check_arg_type(arg, arg_type, aux):
     # print(origin)
     if origin is None:  # Normal type
         return isinstance(arg, arg_type)
-    else:  # subscrpted generic
+    else:  # subscripted generic
         if origin in {typing.Union, types.UnionType}:
             return any(check_arg_type(arg, subtype, aux) for subtype in typing.get_args(arg_type))
         if not isinstance(arg, origin):
