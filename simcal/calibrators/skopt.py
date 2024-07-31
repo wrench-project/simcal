@@ -79,13 +79,13 @@ class ScikitOptimizer(sc.Base):
                         calibration[param.name] = self._ordered_params[param.name].apply_format(value)
                     else:
                         calibration[param.name] = self._categorical_params[param.name].apply_format(value)
-                coordinator.allocate(_eval, (simulator, params,calibration, stoptime))
+                coordinator.allocate(_eval, (simulator, params, calibration, stoptime))
                 results = coordinator.collect()
                 for current, loss, tell in results:
                     if loss is None:
                         continue
                     # print(best_loss,loss,current)
-                    opt.tell(tell,loss)
+                    opt.tell(tell, loss)
             results = coordinator.await_all()
             for current, loss, tell in results:
                 if loss is None:
