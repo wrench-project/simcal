@@ -1,24 +1,54 @@
-import random
 from itertools import count
 from time import time
 
 import skopt.optimizer as skopt
+from skopt.space import *
 
 import simcal.calibrators as sc
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
+from simcal.parameters import *
+
+
+def _eval(simulator: Simulator, params, calibration, stoptime):
+    return calibration, simulator(calibration, stoptime), params
 
 
 class ScikitOptimizer(sc.Base):
-    def __init__(self, optimizer, epsilon, seed=None, early_reject_loss=None):
+    def __init__(self, starts, base_estimator="GP", seed=None):
         super().__init__()
         self.seed = seed
+        self.base_estimator = base_estimator
+        self.starts = starts
 
     def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
                   timelimit=None, coordinator=None):
         from simcal.coordinators import Base as Coordinator
-        #TODO rebuild param list
-        opt = skopt.Optimizer()  # TODO params
+
+        self._categorical_params = {}
+        parameters = []
+        for (key, param) in self._ordered_params.items():
+            if isinstance(param, Exponential):
+                if param.integer:
+                    parameters.append(Integer(param.start, param.end, 'log-uniform', 2, name=key))
+                else:
+                    parameters.append(Real(param.start, param.end, 'log-uniform', 2, name=key))
+            elif isinstance(param, Linear):
+                if param.integer:
+                    parameters.append(Integer(param.start, param.end, 'uniform', 2, name=key))
+                else:
+                    parameters.append(Real(param.start, param.end, 'uniform', 2, name=key))
+            elif isinstance(param, Ordered):
+                parameters.append(Integer(param.range_start, param.range_end, 'uniform', 2, name=key))
+        for (key, param) in self._categorical_params.items():
+            parameters.append(Categorical(param.categories, name=key))
+
+        opt = skopt.Optimizer(
+            dimensions=parameters,
+            base_estimator=self.base_estimator,
+            n_initial_points=self.starts,
+            random_state=self.seed
+        )
 
         if coordinator is None:
             coordinator = Coordinator()
@@ -42,20 +72,25 @@ class ScikitOptimizer(sc.Base):
                 #
                 # for key in self._categorical_params:
                 #     calibration[key] = random.choice(self._categorical_params[key].get_categories())
-                #TODO invoke ask
-                #TODO reformat values
-                coordinator.allocate(self._eval, (simulator, calibration, stoptime))
+                params = opt.ask()
+                calibration = {}
+                for param, value in zip(parameters, params):
+                    if param.name in self._ordered_params:
+                        calibration[param.name] = self._ordered_params.apply_format(value)
+                    else:
+                        calibration[param.name] = value
+                coordinator.allocate(_eval, (simulator, params,calibration, stoptime))
                 results = coordinator.collect()
-                for current, loss in results:
+                for current, loss, tell in results:
                     if loss is None:
                         continue
                     # print(best_loss,loss,current)
-                    #TODO invoke tell
+                    opt.tell(tell,loss)
             results = coordinator.await_all()
-            for current, loss in results:
+            for current, loss, tell in results:
                 if loss is None:
                     continue
-                # TODO invoke tell
+                opt.tell(tell, loss)
         except exception.Timeout:
             # print("Random had to catch a timeout")
             results = opt.get_result()
