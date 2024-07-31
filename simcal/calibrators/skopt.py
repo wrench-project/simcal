@@ -76,9 +76,9 @@ class ScikitOptimizer(sc.Base):
                 calibration = {}
                 for param, value in zip(parameters, params):
                     if param.name in self._ordered_params:
-                        calibration[param.name] = self._ordered_params.apply_format(value)
+                        calibration[param.name] = self._ordered_params[param.name].apply_format(value)
                     else:
-                        calibration[param.name] = value
+                        calibration[param.name] = self._categorical_params[param.name].apply_format(value)
                 coordinator.allocate(_eval, (simulator, params,calibration, stoptime))
                 results = coordinator.collect()
                 for current, loss, tell in results:
