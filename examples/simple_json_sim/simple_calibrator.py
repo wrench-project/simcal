@@ -61,8 +61,9 @@ loss = sklearn_mean_squared_error
 simulator = ExampleSimulator(ground_truth_data, loss)
 
 # prepare the calibrator and setup the arguments to calibrate with their ranges
-calibrator = sc.calibrators.Grid()
+# calibrator = sc.calibrators.Grid()
 # calibrator = sc.calibrators.Random()
+calibrator = sc.calibrators.ScikitOptimizer(10)
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
@@ -72,7 +73,9 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration, loss = calibrator.calibrate(simulator, timelimit=60, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(simulator, timelimit=600, coordinator=coordinator)
 print("final calibration")
 print(calibration)
+print("Expected")
+print([10, 4, 5, 3])
 print(loss)

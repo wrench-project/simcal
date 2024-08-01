@@ -12,8 +12,8 @@ class GradientDescent(sc.Base):
     def __init__(self, delta, epsilon, seed=None, early_reject_loss=None):
         super().__init__()
         self.seed = seed
-        self.epsilon = epsilon
-        self.delta = delta
+        self.epsilon = epsilon # minimum change in loss to continue
+        self.delta = delta # initial change in parameters
         self.early_reject_loss = early_reject_loss
 
     def _populate(self, param_vector, vector_mapping, categoricals):
