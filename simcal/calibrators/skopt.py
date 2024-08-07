@@ -13,7 +13,11 @@ from simcal.parameters import *
 def _eval(simulator: Simulator, params, calibration, stoptime):
     return calibration, simulator(calibration, stoptime), params
 
-
+#Base estimators can be
+#"GP" for Gradient Process Regressor
+#"RF" for Random Forrest Regresor
+#"ET" for Extra Trees Regressor or
+#"GBRT" for Gradient Boosting Quantile Regressor trees
 class ScikitOptimizer(sc.Base):
     def __init__(self, starts, base_estimator="GP", seed=None):
         super().__init__()
