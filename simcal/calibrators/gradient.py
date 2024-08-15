@@ -25,10 +25,12 @@ class GradientDescent(sc.Base):
         return args
 
     def _evaluate_vector(self, simulator: Simulator, param_vector, vector_mapping, categoricals, stoptime):
-        args = self._populate(param_vector, vector_mapping, categoricals, )
-        self._timeout_shortout(stoptime)
-        return simulator(args, stoptime)
-
+        try:
+            args = self._populate(param_vector, vector_mapping, categoricals, )
+            self._timeout_shortout(stoptime)
+            return simulator(args, stoptime)
+        except Exception as e:
+            raise exception.SimulationFail(param_vector, e)
     def _clamp_vector(self, param_vector, vector_mapping):
         for i in range(len(param_vector)):
             param = self._get_raw_param(i, vector_mapping)
