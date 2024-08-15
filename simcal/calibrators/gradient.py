@@ -29,6 +29,8 @@ class GradientDescent(sc.Base):
             args = self._populate(param_vector, vector_mapping, categoricals, )
             self._timeout_shortout(stoptime)
             return simulator(args, stoptime)
+        except exception.Timeout:
+            raise
         except Exception as e:
             raise exception.SimulationFail(param_vector, e)
     def _clamp_vector(self, param_vector, vector_mapping):
