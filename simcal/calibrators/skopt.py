@@ -10,8 +10,14 @@ import simcal.simulator as Simulator
 from simcal.parameters import *
 
 
+
 def _eval(simulator: Simulator, params, calibration, stoptime):
-    return calibration, simulator(calibration, stoptime), params
+    try:
+        return calibration, simulator(calibration, stoptime), params
+    except exception.Timeout:
+        raise
+    except Exception as e:
+        raise exception.SimulationFail(params, e)
 
 #Base estimators can be
 #"GP" for Gradient Process Regressor
