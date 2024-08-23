@@ -38,6 +38,7 @@ class ScikitOptimizer(sc.Base):
         self._categorical_params = {}
         parameters = []
         for (key, param) in self._ordered_params.items():
+            print(key,type(param),param)
             if isinstance(param, Exponential):
                 if param.integer:
                     parameters.append(Integer(param.start, param.end, 'log-uniform', 2, name=key))
@@ -75,7 +76,7 @@ class ScikitOptimizer(sc.Base):
                 if time() > stoptime:
                     break
 
-                calibration = {}
+                # calibration = {}
                 # for key in self._ordered_params:
                 #     param = self._ordered_params[key]
                 #     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
