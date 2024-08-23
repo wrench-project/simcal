@@ -38,12 +38,14 @@ class ScikitOptimizer(sc.Base):
         self._categorical_params = {}
         parameters = []
         for (key, param) in self._ordered_params.items():
-            print(key,type(param),param)
+            # print(key,type(param),param)
             if isinstance(param, Exponential):
                 if param.integer:
-                    parameters.append(Integer(param.start, param.end, 'log-uniform', 2, name=key))
+                    parameters.append(Integer(int(param.from_normalized(param.range_start)),
+                                           int(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
                 else:
-                    parameters.append(Real(param.start, param.end, 'log-uniform', 2, name=key))
+                    parameters.append(Real(float(param.from_normalized(param.range_start)),
+                                           float(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
             elif isinstance(param, Linear):
                 if param.integer:
                     parameters.append(Integer(param.start, param.end, 'uniform', 2, name=key))
