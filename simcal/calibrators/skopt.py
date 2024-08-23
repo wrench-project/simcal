@@ -10,7 +10,6 @@ import simcal.simulator as Simulator
 from simcal.parameters import *
 
 
-
 def _eval(simulator: Simulator, params, calibration, stoptime):
     try:
         return calibration, simulator(calibration, stoptime), params
@@ -19,11 +18,12 @@ def _eval(simulator: Simulator, params, calibration, stoptime):
     except Exception as e:
         raise exception.SimulationFail(params, e)
 
-#Base estimators can be
-#"GP" for Gradient Process Regressor
-#"RF" for Random Forrest Regresor
-#"ET" for Extra Trees Regressor or
-#"GBRT" for Gradient Boosting Quantile Regressor trees
+
+# Base estimators can be
+# "GP" for Gradient Process Regressor
+# "RF" for Random Forrest Regresor
+# "ET" for Extra Trees Regressor or
+# "GBRT" for Gradient Boosting Quantile Regressor trees
 class ScikitOptimizer(sc.Base):
     def __init__(self, starts, base_estimator="GP", seed=None):
         super().__init__()
@@ -86,12 +86,7 @@ class ScikitOptimizer(sc.Base):
                 # for key in self._categorical_params:
                 #     calibration[key] = random.choice(self._categorical_params[key].get_categories())
                 params = opt.ask()
-                calibration = {}
-                for param, value in zip(parameters, params):
-                    if param.name in self._ordered_params:
-                        calibration[param.name] = self._ordered_params[param.name].apply_format(value)
-                    else:
-                        calibration[param.name] = self._categorical_params[param.name].apply_format(value)
+                calibration = self.to_regular_params(parameters, params)
                 coordinator.allocate(_eval, (simulator, params, calibration, stoptime))
                 results = coordinator.collect()
                 for current, loss, tell in results:
@@ -107,16 +102,31 @@ class ScikitOptimizer(sc.Base):
         except exception.Timeout:
             # print("Random had to catch a timeout")
             results = opt.get_result()
+            results.x = self.to_regular_params(parameters, results.x)
             return results.x, results.fun
         except exception.EarlyTermination as e:
             ebest, eloss = e.result
             if eloss is None:
                 results = opt.get_result()
-                e.result = (results.x, results.fun)
+                results.x = self.to_regular_params(parameters, results.x)
+                if results.fun < eloss:
+                    e.result = (results.x, results.fun)
             raise e
         except BaseException as e:
             results = opt.get_result()
+            results.x = self.to_regular_params(parameters, results.x)
             raise exception.EarlyTermination((results.x, results.fun), e)
 
         results = opt.get_result()
+        results.x = self.to_regular_params(parameters, results.x)
         return results.x, results.fun
+
+    def to_regular_params(self, parameters, params):
+        calibration = {}
+        for param, value in zip(parameters, params):
+            if param.name in self._ordered_params:
+                calibration[param.name] = self._ordered_params[param.name].apply_format(value)
+            else:
+                calibration[param.name] = self._categorical_params[param.name].apply_format(value)
+
+        return calibration
