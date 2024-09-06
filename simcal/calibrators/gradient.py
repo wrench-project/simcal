@@ -4,19 +4,24 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 import simcal.calibrators as sc
+import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
+from simcal.parameters import Base as parameter
+from simcal.parameters import Value
 
 
 class GradientDescent(sc.Base):
-    def __init__(self, delta, epsilon, seed=None, early_reject_loss=None):
+    def __init__(self, delta: float | int, epsilon: float | int, seed: int | None = None,
+                 early_reject_loss: float | int | None = None):
         super().__init__()
         self.seed = seed
-        self.epsilon = epsilon # minimum change in loss to continue
-        self.delta = delta # initial change in parameters
+        self.epsilon = epsilon  # minimum change in loss to continue
+        self.delta = delta  # initial change in parameters
         self.early_reject_loss = early_reject_loss
 
-    def _populate(self, param_vector, vector_mapping, categoricals):
+    def _populate(self, param_vector: list[float], vector_mapping: list[str], categoricals: dict[str, parameter]) -> \
+            dict[str, parameter]:
         args = categoricals.copy()
         param_vector = param_vector.copy()
         self._clamp_vector(param_vector, vector_mapping)
@@ -33,6 +38,7 @@ class GradientDescent(sc.Base):
             raise
         except Exception as e:
             raise exception.SimulationFail(param_vector, e)
+
     def _clamp_vector(self, param_vector, vector_mapping):
         for i in range(len(param_vector)):
             param = self._get_raw_param(i, vector_mapping)
@@ -71,7 +77,7 @@ class GradientDescent(sc.Base):
                             categoricals[param[0]] = param[1]
                             loss = self._evaluate_vector(simulator, param_vector, vector_mapping, categoricals,
                                                          stoptime)
-                            #print("checking categoricals", loss)
+                            # print("checking categoricals", loss)
                             if best_c_loss is None or loss < best_c_loss:
                                 best_categorical = categoricals.copy()
                                 best_c_loss = loss
@@ -87,7 +93,7 @@ class GradientDescent(sc.Base):
                     break
                 # print("finding gradient")
                 loss_at_param = best_c_loss
-                #print("after categoricals, best loss is ", loss_at_param)
+                # print("after categoricals, best loss is ", loss_at_param)
                 # find gradient
                 gradient = np.empty(dimensions)
                 for i in range(dimensions):
@@ -103,11 +109,11 @@ class GradientDescent(sc.Base):
                     direction_loss = self._evaluate_vector(simulator, tmp_vector, vector_mapping, best_categorical,
                                                            stoptime)
                     gradient[i] = (direction_loss - loss_at_param) / self.delta * multiplier
-                    #print("loss while finding gradient", direction_loss)
+                    # print("loss while finding gradient", direction_loss)
                     if direction_loss < best_loss:
                         best_loss = direction_loss
                         best = self._populate(tmp_vector, vector_mapping, best_categorical)
-                #print("Best loss before backtracking", best_loss)
+                # print("Best loss before backtracking", best_loss)
                 # [xi+1]=xi+norm_gradient*scale
                 # h(xi)=f(xi)+gradient(dot)(xi-[xi+1])
                 # h(xi)=f(xi)+gradient(dot)norm_gradient*scale
@@ -128,7 +134,7 @@ class GradientDescent(sc.Base):
 
                     actual = self._evaluate_vector(simulator, backtrack_test, vector_mapping, best_categorical,
                                                    stoptime)
-                    #print("backtracking", actual)
+                    # print("backtracking", actual)
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
@@ -139,7 +145,7 @@ class GradientDescent(sc.Base):
                         last_check = True
                     if actual - loss_at_param < self.epsilon:  # we arent making any progress at all
                         last_check = True
-                        #print("Just 1 more check")
+                        # print("Just 1 more check")
                     backtrack /= 2
                 # update learning rate
                 learning_rate = backtrack
@@ -154,21 +160,22 @@ class GradientDescent(sc.Base):
                 e.result = (best, best_loss)
             raise e
         except exception.Timeout:
-            #print("best loss, Timed out", best_loss)
+            # print("best loss, Timed out", best_loss)
             return best, best_loss
         except BaseException as e:
-            #("best loss, EXCEPTION!", best_loss)
+            # ("best loss, EXCEPTION!", best_loss)
             raise exception.EarlyTermination((best, best_loss), e)
-        #print("best loss", best_loss)
+        # print("best loss", best_loss)
         return best, best_loss
 
-    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
-                  timelimit=None, coordinator=None):
+    def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
+                  iterations: int | None = None, timelimit: float | int | None = None,
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         if len(self._ordered_params) <= 0:
             internal = sc.Grid()
         else:
             internal = sc.Random(self.seed)
-        #print("starting new gradient")
+        # print("starting new gradient")
         internal._ordered_params = self._ordered_params
         internal._categorical_params = self._categorical_params
         if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it

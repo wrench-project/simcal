@@ -5,6 +5,8 @@ import simcal.exceptions as exception
 import simcal.simulator as Simulator
 
 from simcal.calibrators.base import Base
+import simcal.coordinators.base as Coordinator
+from simcal.parameters import Value
 
 
 def _eval(simulator: Simulator, calibration, stoptime):
@@ -18,8 +20,9 @@ class Random(Base):
             random.seed(seed)
         self._eval = _eval
 
-    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
-                  timelimit=None, coordinator=None):
+    def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
+                  iterations: int | None = None, timelimit: float | int | None = None,
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator
         if coordinator is None:

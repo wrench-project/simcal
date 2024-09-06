@@ -8,7 +8,7 @@ import simcal.calibrators as sc
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 from simcal.parameters import *
-
+import simcal.coordinators.base as Coordinator
 
 def _eval(simulator: Simulator, params, calibration, stoptime):
     try:
@@ -31,8 +31,9 @@ class ScikitOptimizer(sc.Base):
         self.base_estimator = base_estimator
         self.starts = starts
 
-    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
-                  timelimit=None, coordinator=None):
+    def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
+                  iterations: int | None = None, timelimit: float | int | None = None,
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         from simcal.coordinators import Base as Coordinator
 
         self._categorical_params = {}

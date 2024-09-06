@@ -1,9 +1,11 @@
-import random
 import sys
 from time import time
+from typing import TextIO
 
+import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
 from simcal.calibrators.base import Base
+from simcal.parameters import Value
 
 
 def _eval(simulator, calibration):
@@ -11,15 +13,16 @@ def _eval(simulator, calibration):
 
 
 class Debug(Base):
-    def __init__(self, logger=sys.stdout):
+    def __init__(self, logger: TextIO = sys.stdout):
         super().__init__()
         self.logger = logger
 
     def log(self, *args, **kwargs):
         print(*args, file=self.logger, **kwargs)
 
-    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None,
-                  timelimit=None, coordinator=None):
+    def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
+                  iterations: int | None = None, timelimit: float | int | None = None,
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         self.log("Calibrate", (simulator, early_stopping_loss, iterations, timelimit, coordinator))
         # TODO handle iteration and steps_override modes
         from simcal.coordinators import Base as Coordinator

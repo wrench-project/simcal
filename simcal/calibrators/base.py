@@ -1,6 +1,8 @@
+from typing import Self
+
 import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
-from simcal.parameters import Categorical
+from simcal.parameters import Categorical, Value
 from simcal.parameters import Ordered
 
 
@@ -11,11 +13,12 @@ class Base(object):
 
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
-                  coordinator: Coordinator.Base | None = None):
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int],float]:
+
         raise NotImplementedError(f"{self.__class__.__name__} does not define calibrate(self, simulator, "
                                   f"compute_loss, reference_data, iterations=None, timeout=None)")
 
-    def add_param(self, name: str, parameter: Ordered | Categorical):
+    def add_param(self, name: str, parameter: Ordered | Categorical) -> Self:
         """
         Method to add a to-be-calibrated parameter
         :param name: a user-defined parameter name
@@ -31,7 +34,7 @@ class Base(object):
             self._categorical_params[name] = parameter
         return self
 
-    def get_param(self, name: str):
+    def get_param(self, name: str) -> Ordered | Categorical | None:
         """
         Method to retrieve a parameter by  name
         :param name: a user-defined parameter name
