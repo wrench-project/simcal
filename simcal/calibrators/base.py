@@ -1,6 +1,7 @@
-from simcal.parameters import Ordered
-from simcal.parameters import Categorical
+import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
+from simcal.parameters import Categorical
+from simcal.parameters import Ordered
 
 
 class Base(object):
@@ -8,7 +9,9 @@ class Base(object):
         self._ordered_params = {}
         self._categorical_params = {}
 
-    def calibrate(self, simulator: Simulator, early_stopping_loss=None, iterations=None, timelimit=None, coordinator=None):
+    def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
+                  iterations: int | None = None, timelimit: float | int | None = None,
+                  coordinator: Coordinator.Base | None = None):
         raise NotImplementedError(f"{self.__class__.__name__} does not define calibrate(self, simulator, "
                                   f"compute_loss, reference_data, iterations=None, timeout=None)")
 

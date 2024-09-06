@@ -63,7 +63,7 @@ simulator = ExampleSimulator(ground_truth_data, loss)
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 # calibrator = sc.calibrators.Grid()
 # calibrator = sc.calibrators.Random()
-calibrator = sc.calibrators.ScikitOptimizer(10)
+calibrator = sc.calibrators.ScikitOptimizer(1000)
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))

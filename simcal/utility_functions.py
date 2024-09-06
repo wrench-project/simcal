@@ -1,11 +1,14 @@
 import math
+import os
 import subprocess
-from typing import Dict
+from typing import Dict, Any, Tuple
 
 from simcal.exceptions import Timeout
 
 
-def bash(command, args=None, std_in: int | None = None, cwd: str | None = None, env: Dict[str, str] | None = None, timeout=None):
+def bash(command, args: list[Any] | None = None, std_in: str | None = None, cwd: str | os.PathLike | None = None,
+         env: Dict[str, str] | None = None,
+         timeout: int | float | None = None) -> Tuple[str, str, int]:
     """
     A method to invoke an executable using the Shell
     :param command: the executable name
@@ -40,8 +43,7 @@ def bash(command, args=None, std_in: int | None = None, cwd: str | None = None, 
     return stdout, stderr, return_code
 
 
-def safe_exp2(x):
+def safe_exp2(x: int | float) -> float:
     if x > 1023:
         x = 1023
     return math.pow(2, x)
-

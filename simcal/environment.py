@@ -5,7 +5,8 @@ import pathlib
 import sys
 import tempfile
 import time
-from typing import Self
+from types import TracebackType
+from typing import Self, Any, Tuple, TextIO, Optional, Type
 
 import simcal.exceptions as exception
 from simcal.utility_functions import bash
@@ -135,16 +136,17 @@ class Environment(object):
         self._file_stack = list()
 
         for tmp in self._dir_stack:
-                tmp.cleanup()
+            tmp.cleanup()
         self._dir_stack = list()
 
     # TODO document things under here
-    def bash(self, command, args=None, std_in=None):  # TODO account for remote ex
+    def bash(self, command: str, args: list[Any] | None = None,
+             std_in: str | None = None) -> Tuple[str, str, int]:  # TODO account for remote ex
         # os.chdir(self._cwd)
         timeout = self.timeout_shortout()
         return bash(command, args, std_in, cwd=self._cwd, timeout=timeout)
 
-    def open(self, file, *args, **kwargs):
+    def open(self, file: str | os.PathLike, *args, **kwargs) -> TextIO:
         return open(self.path(file), *args, **kwargs)
 
     def path(self, path: str | os.PathLike) -> pathlib.Path:
@@ -154,18 +156,20 @@ class Environment(object):
             path = pathlib.Path(self._cwd / path).resolve()
         return path
 
-    def __enter__(self):
+    def __enter__(self) -> Self:
         return self
 
-    def __exit__(self, exception_type, exception_value, exception_traceback):
-        while True: # In theory this resists the crash that leaves uncleaned up files
+    def __exit__(self, exctype: Optional[Type[BaseException]],
+                 excinst: Optional[BaseException],
+                 exctb: Optional[TracebackType]) -> None:
+        while True:  # In theory this resists the crash that leaves uncleaned up files
             try:
                 self.cleanup()
                 break
             except KeyboardInterrupt:
                 print("Cleaning up temp files, Keyboard Interrupt ignored", file=sys.stderr)
 
-    def timeout_shortout(self):
+    def timeout_shortout(self) -> float | None:
         if self.stoptime is not None:
             if time.time() > self.stoptime:
                 raise exception.Timeout()
