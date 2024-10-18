@@ -4,6 +4,7 @@ from simcal.calibrators.gradient import GradientDescent
 from simcal.calibrators.grid import Grid
 from simcal.calibrators.random import Random
 from simcal.calibrators.skopt import ScikitOptimizer
+from simcal.calibrators.genetic import GeneticAlgorithm
 
 # from simcal.calibrators.bo import BayesianOptimization
 
@@ -14,5 +15,7 @@ __all__ = [
     "GradientDescent",
     # "BayesianOptimization",
     "Debug",
-    "ScikitOptimizer"
+    "ScikitOptimizer",
+    "GeneticAlgorithm"
+
 ]

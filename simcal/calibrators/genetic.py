@@ -84,7 +84,7 @@ class GeneticAlgorithm(sc.Base):
             itr = count(start=0, step=1)
         else:
             itr = range(0, iterations)
-        generation = set()
+        generation = []
         breeders = []
         current_ret = None
         try:
@@ -100,22 +100,23 @@ class GeneticAlgorithm(sc.Base):
                     progress_i = itteration / iterations
                 progress = self.annealing(max(0, min(progress_t, progress_i)))
                 if not generation:
-                    calibration = {}
-                    for key in self._ordered_params:
-                        param = self._ordered_params[key]
-                        calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
+                    for i in range(self.generation_size):
+                        calibration = {}
+                        for key in self._ordered_params:
+                            param = self._ordered_params[key]
+                            calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                    for key in self._categorical_params:
-                        calibration[key] = random.choice(self._categorical_params[key].get_categories())
-                    generation.add(calibration)
+                        for key in self._categorical_params:
+                            calibration[key] = random.choice(self._categorical_params[key].get_categories())
+                        generation.append(calibration)
                 else:
-                    generation = set(sorted(breeders, key=lambda x: x[1])[:self.elites])
-                    breeders = set(breeders)
+                    generation = sorted(breeders, key=lambda x: x[1])[:self.elites]
+                    print(breeders)
                     for i in range(self.generation_size - len(generation)):
                         a, b = random.sample(breeders, 2)
                         c = self.breed(a, b)
                         c = self.mutate(c)
-                        generation.add(c)
+                        generation.append(c)
                 # for key in self._ordered_params:
                 #     param = self._ordered_params[key]
                 #     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
@@ -129,7 +130,7 @@ class GeneticAlgorithm(sc.Base):
                 for current, loss in results:
                     if loss is None:
                         continue
-                    if loss < current_ret[1]:
+                    if current_ret is None or loss < current_ret[1]:
                         current_ret = (current, loss)
                     new_gen.append((current, loss, self.fitness_noise(loss)))
                 breeders = sorted(new_gen, key=lambda x: x[2])[:max(self.breeders, self.elites)]
