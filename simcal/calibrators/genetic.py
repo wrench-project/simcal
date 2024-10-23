@@ -153,4 +153,9 @@ class GeneticAlgorithm(sc.Base):
             raise e
         except BaseException as e:
             raise exception.EarlyTermination(current_ret, e)
+        for current, loss, tell in results:
+            if loss is None:
+                continue
+            if loss < current_ret[1]:
+                current_ret = (current, loss)
         return current_ret
