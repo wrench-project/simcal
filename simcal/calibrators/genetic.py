@@ -114,7 +114,6 @@ class GeneticAlgorithm(sc.Base):
                     print(breeders)
                     for i in range(self.generation_size - len(generation)):
                         a, b = random.sample(breeders, 2)
-                        print(a)
                         c = self.breed(a[0], b[0])
                         c = self.mutate(c)
                         generation.append(c)
