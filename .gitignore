@@ -4,3 +4,4 @@
 /simcal.egg-info
 /dist
 examples/*/tmp*/
+/examples/shell_test/output

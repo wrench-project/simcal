@@ -5,10 +5,10 @@ from time import time
 
 from numpy import linspace
 
+import simcal.coordinators.base as Coordinator
+import simcal.exceptions as exception
 import simcal.simulator as Simulator
 from simcal.calibrators.base import Base
-import simcal.exceptions as exception
-import simcal.coordinators.base as Coordinator
 from simcal.parameters import Value
 
 
@@ -76,9 +76,10 @@ def _smallest_denominator(decimal):
 
 
 class _RectangularIterator(object):
-    def __init__(self, ordered_params, categorical_params):
+    def __init__(self, ordered_params, categorical_params, uprez=None):
         self._ordered_params_conversion = []
         self._ordered_params = []
+        self._uprez = uprez
         for key in ordered_params:
             self._ordered_params_conversion.append(key)
             self._ordered_params.append(ordered_params[key])
@@ -126,7 +127,7 @@ class _RectangularIterator(object):
                                 for param in c:  # repackage categorical params for calibrator
                                     ret[param[0]] = param[1]  # param is a touple (name,value)
                             yield ret
-                        break
+                        break  # This break is needed, I dont remember why, but without it you sample points multiple times.  I know it looks like it skips some points, but it doesnt seem too actually do so.
 
             denominator *= 2
             for i in range(len(cores)):
@@ -134,3 +135,5 @@ class _RectangularIterator(object):
                 current_sets[i] = set(update)
                 cores[i] += update
                 cores[i].sort()
+            if self._uprez:
+                self._uprez()
