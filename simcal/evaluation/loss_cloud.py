@@ -55,7 +55,7 @@ class LossCloud(BaseCalibrator):
 
             lower_bound, iterations_remaining, recommended_epsilon, incidental_points \
                 = self.find_cube_bound(_Direction.LOWER, simulator, parameter_vector,
-                                       target_loss, hypercube_loss, loss_tolerance, recommended_epsilon,
+                                       target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
                                        iterations=iterations_remaining,
                                        stoptime=stoptime, coordinator=coordinator, output_orchestrator=output_orchestrator)
             cloud_points += incidental_points
@@ -144,7 +144,7 @@ class LossCloud(BaseCalibrator):
             if ret < hypercube_loss:
 
                 if recommended_epsilon is None:  # expanding search
-                    if out_of_range:  # The boundry is outside of the parameter spacd
+                    if out_of_range:  # The boundry is outside of the parameter space
                         recommended_epsilon = abs(initial_norm - current)
                         break
                     # print(ret, "doubling")

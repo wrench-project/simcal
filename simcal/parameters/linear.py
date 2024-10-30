@@ -26,8 +26,8 @@ class Linear(Ordered):  # requires testing
             new_range_end = new_range_end.value
 
         ret = Linear(new_range_start, new_range_end,self.integer)
-        ret.range_start = self.range_start
-        ret.range_end = self.range_end
+        ret.start = self.start
+        ret.end = self.end
         return ret
 
     def is_valid_value(self, x: float | Value) -> bool:
