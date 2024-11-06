@@ -137,10 +137,10 @@ class LossCloud(BaseCalibrator):
             iterations += 1
             if ret < target_loss:
                 if output_orchestrator:
-                    output_orchestrator.append(param_value.copy)
+                    output_orchestrator.append(param_value.copy())
                     cloud_points += 1
                 else:
-                    cloud_points.append(param_value.copy)
+                    cloud_points.append(param_value.copy())
 
             if abs(ret - hypercube_loss) < loss_tolerance:
                 # print(ret, "good enough")
