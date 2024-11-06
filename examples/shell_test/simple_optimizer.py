@@ -28,12 +28,12 @@ coordinator = sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinator is
 evaluator = sc.evaluation.LossCloud()
 evaluator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 evaluator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
-evaluator.add_param("c", sc.parameter.Linear(0, 10).format("%.2f"))
+evaluator.add_param("c", sc.parameter.L     inear(0, 10).format("%.2f"))
 evaluator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 # scenario1({'a': 10, 'b': 4, 'c': 5, 'd': 3}, 0)
 print(evaluator.find_cloud(simulator, {'a': 10, 'b': 4, 'c': 5, 'd': 3},
                            1, 10, .1, 0.3,
-                           timelimit=60,output_dir="./output"))  # , coordinator=coordinator))
+                           timelimit=60,output_dir="")) #,output_dir="./output"))  # , coordinator=coordinator))
 # def find_cloud(self, evaluate_point, parameter_vector, target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
 #                   max_points=None,
 #                   iterations=None, timelimit=None, coordinator=None):

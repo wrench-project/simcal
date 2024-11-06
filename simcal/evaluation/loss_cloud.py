@@ -1,3 +1,4 @@
+import sys
 import time
 from enum import Enum
 from logging import warning
@@ -39,8 +40,11 @@ class LossCloud(BaseCalibrator):
             raise ValueError("No stopping condition was given")
         cloud_points = []
         output_orchestrator = WithNone()
-        if output_dir:
-            output_orchestrator = OutputOrchestrator(output_dir)
+        if output_dir is not None:
+            if output_dir:
+                output_orchestrator = OutputOrchestrator(output_dir)
+            else:
+                output_orchestrator = DebugOrchestrator()
             cloud_points = 0
         with output_orchestrator:
             iterations_remaining = iterations
@@ -271,6 +275,62 @@ class OutputOrchestrator:
             self.active_file = open(self.active_path, 'w')
             self.active_file.write("[\n")
         self.active_file.write(str(x)+",\n")
+
+    def __add__(self, other):
+        if isinstance(other, list | tuple):
+            for x in other:
+                self.append(other)
+        else:
+            self.append(other)
+        return self
+
+    def __iadd__(self, other):
+        self + other
+        return self
+
+    def __repr__(self):
+        return f"OutputOrchestrator({self.dir}) at rez {self.active_rez}"
+
+class DebugOrchestrator:
+    def __init__(self):
+        self.active_rez = 1
+        self.initiated = False
+        self.active_path = "cloud-incidental.list"
+        self.active_file = None
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        if self.active_file:
+            self.active_file.write("]\n")
+            self.active_file=None
+        # Optionally suppress exceptions if you want (return True to suppress)
+        return False
+
+    def switch_file(self):
+        if self.active_file:
+            self.active_file.write("]\n")
+            self.active_file.flush()
+            self.active_file=None
+
+    def ready(self):
+        self.initiated = True
+        self.active_path =  f"cloud-{self.active_rez}.list"
+        self.switch_file()
+
+    def uprez(self):
+        self.active_rez *= 2
+        if self.initiated:
+            self.active_path = f"cloud-{self.active_rez}.list"
+            self.switch_file()
+
+    def append(self, x):
+        if not self.active_file:
+            self.active_file = sys.stdout
+            print(self.active_path)
+            self.active_file.write("[\n")
+        self.active_file.write(str(x)+",\n")
+        print(x)
 
     def __add__(self, other):
         if isinstance(other, list | tuple):
