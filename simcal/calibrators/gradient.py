@@ -138,7 +138,7 @@ class GradientDescent(sc.Base):
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
-                        self.mark_calibration(self, (best, best_loss))
+                        self.mark_calibration((best, best_loss))
                         in_minima = True
                     if last_check:
                         break
@@ -188,7 +188,9 @@ class GradientDescent(sc.Base):
             else:
                 stoptime = time.time() + timelimit
             internal._eval = self.descend
-            return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
+            res = internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
+            self.timeline+=internal.timeline
+            return res
 
     def _timeout_shortout(self, stoptime):
         if stoptime is not None:

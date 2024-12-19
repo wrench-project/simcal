@@ -59,7 +59,7 @@ class Random(Base):
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
-                        self.mark_calibration(self, (best, best_loss))
+                        self.mark_calibration((best, best_loss))
             results = coordinator.await_all()
             for current, loss in results:
                 if loss is None:
@@ -68,7 +68,7 @@ class Random(Base):
                 if best is None or loss < best_loss:
                     best = current
                     best_loss = loss
-                    self.mark_calibration(self, (best, best_loss))
+                    self.mark_calibration((best, best_loss))
         except exception.Timeout:
             #print("Random had to catch a timeout")
             return best, best_loss

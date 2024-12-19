@@ -44,7 +44,7 @@ class Grid(Base):
                         if best is None or loss < best_loss:
                             best = current
                             best_loss = loss
-                            self.mark_calibration(self, (best, best_loss))
+                            self.mark_calibration((best, best_loss))
                 results = coordinator.await_all()
                 for current, loss in results:
                     if loss is None:
@@ -52,7 +52,7 @@ class Grid(Base):
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
-                        self.mark_calibration(self, (best, best_loss))
+                        self.mark_calibration((best, best_loss))
             except exception.Timeout:
                 return best, best_loss
             except exception.EarlyTermination as e:

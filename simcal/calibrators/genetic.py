@@ -131,7 +131,7 @@ class GeneticAlgorithm(sc.Base):
                     if loss is None:
                         continue
                     if current_ret is None or loss < current_ret[1]:
-                        self.mark_calibration(self, (current, loss))
+                        self.mark_calibration((current, loss))
                         current_ret = (current, loss)
                     new_gen.append((current, loss, self.fitness_noise(loss)))
                 breeders = sorted(new_gen, key=lambda x: x[2])[:max(self.breeders, self.elites)]
@@ -140,7 +140,7 @@ class GeneticAlgorithm(sc.Base):
                 if loss is None:
                     continue
                 if loss < current_ret[1]:
-                    self.mark_calibration(self, (current, loss))
+                    self.mark_calibration((current, loss))
                     current_ret = (current, loss)
 
         # TODO Everything bellow here
@@ -159,6 +159,6 @@ class GeneticAlgorithm(sc.Base):
             if loss is None:
                 continue
             if loss < current_ret[1]:
-                self.mark_calibration(self, (current, loss))
+                self.mark_calibration((current, loss))
                 current_ret = (current, loss)
         return current_ret

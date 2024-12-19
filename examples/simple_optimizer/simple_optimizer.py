@@ -27,6 +27,7 @@ simulator = ExampleSimulator(10)
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 # calibrator = sc.calibrators.Grid()
 # calibrator = sc.calibrators.Random()
+#calibrator = sc.calibrators.GradientDescent(0.1, 1)
 calibrator = sc.calibrators.GradientDescent(0.1, 1)
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))

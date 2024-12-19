@@ -95,20 +95,22 @@ class ScikitOptimizer(sc.Base):
                     if loss is None:
                         continue
                     # print(best_loss,loss,current)
+                    opt.tell(tell, loss)
                     if best_loss is None or loss < best_loss:
                         best_loss = loss
                         results = opt.get_result()
-                        self.mark_calibration(self, (self.to_regular_params(parameters, results.x), best_loss))
-                    opt.tell(tell, loss)
+                        self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
+
             results = coordinator.await_all()
             for current, loss, tell in results:
                 if loss is None:
                     continue
+                opt.tell(tell, loss)
                 if best_loss is None or loss < best_loss:
                     best_loss = loss
                     results = opt.get_result()
-                    self.mark_calibration(self, (self.to_regular_params(parameters, results.x), best_loss))
-                opt.tell(tell, loss)
+                    self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
+
         except exception.Timeout:
             # print("Random had to catch a timeout")
             results = opt.get_result()
