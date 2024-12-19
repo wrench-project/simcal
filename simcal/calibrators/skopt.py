@@ -5,10 +5,11 @@ import skopt.optimizer as skopt
 from skopt.space import *
 
 import simcal.calibrators as sc
+import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 from simcal.parameters import *
-import simcal.coordinators.base as Coordinator
+
 
 def _eval(simulator: Simulator, params, calibration, stoptime):
     try:
@@ -35,7 +36,7 @@ class ScikitOptimizer(sc.Base):
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         from simcal.coordinators import Base as Coordinator
-
+        best_loss = None
         self._categorical_params = {}
         parameters = []
         for (key, param) in self._ordered_params.items():
@@ -94,11 +95,19 @@ class ScikitOptimizer(sc.Base):
                     if loss is None:
                         continue
                     # print(best_loss,loss,current)
+                    if best_loss is None or loss < best_loss:
+                        best_loss = loss
+                        results = opt.get_result()
+                        self.mark_calibration(self, (self.to_regular_params(parameters, results.x), best_loss))
                     opt.tell(tell, loss)
             results = coordinator.await_all()
             for current, loss, tell in results:
                 if loss is None:
                     continue
+                if best_loss is None or loss < best_loss:
+                    best_loss = loss
+                    results = opt.get_result()
+                    self.mark_calibration(self, (self.to_regular_params(parameters, results.x), best_loss))
                 opt.tell(tell, loss)
         except exception.Timeout:
             # print("Random had to catch a timeout")

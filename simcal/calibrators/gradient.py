@@ -138,6 +138,7 @@ class GradientDescent(sc.Base):
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
+                        self.mark_calibration(self, (best, best_loss))
                         in_minima = True
                     if last_check:
                         break
@@ -160,6 +161,7 @@ class GradientDescent(sc.Base):
                 e.result = (best, best_loss)
             raise e
         except exception.Timeout:
+
             # print("best loss, Timed out", best_loss)
             return best, best_loss
         except BaseException as e:
