@@ -17,7 +17,7 @@ class Base(object):
 
     def mark_calibration(self,calibration):
         time = datetime.now()
-        if len(self.timeline > self._max_timeline):
+        if len(self.timeline) > self._max_timeline:
             self.timeline.pop(0)
         self.timeline.append((time,calibration))
         self.current_best(calibration)
