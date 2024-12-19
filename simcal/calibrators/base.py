@@ -20,7 +20,7 @@ class Base(object):
         if len(self.timeline) > self._max_timeline:
             self.timeline.pop(0)
         self.timeline.append((time,calibration))
-        self.current_best(calibration)
+        self.current_best=calibration
 
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
