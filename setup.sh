@@ -34,12 +34,14 @@ action() {
         python3.12 -m venv ${venv_path}
         source "${venv_path}/bin/activate"
         python -m pip install --upgrade pip setuptools~=69.1.0 wheel
+        echo "Installing software dependencies..."
         python -m pip install -r "${this_dir}/requirements.txt"
     else
         source "${venv_path}/bin/activate"
     fi
 
     if ! python -c "import simcal" &> /dev/null; then
+        echo "Installing simcal..."
         python -m pip install .
     fi
 
