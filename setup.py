@@ -7,8 +7,10 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-from simcal.version import __version__
 from setuptools import setup, find_packages
+
+with open('simcal/version.py') as f:
+    exec(f.read())
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -48,6 +50,5 @@ setup(
         'Topic :: Documentation :: Sphinx',
         'Topic :: System :: Distributed Computing'
     ],
-    #python_requires='>=3.11,<3.12'
 	python_requires='>=3.12'
 )
