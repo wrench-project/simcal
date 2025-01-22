@@ -24,16 +24,13 @@ setup(
     description='A simulator calibration framework',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/wrench-project/simcal',
+    url='https://github.com/wrench-project/Grand-Unified-Calibration-Framework',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'numpy~=1.26.0',
-        'scikit-learn~=1.4.0',
         # 'deephyper[hps]==0.7.0',
         'scikit-optimize',
         'processify @ git+https://github.com/dgerosa/processify',
-        'torch',
         'torchvision',
         'ddKS @ git+https://github.com/pnnl/DDKS',
         'POT'
@@ -50,5 +47,6 @@ setup(
         'Topic :: Documentation :: Sphinx',
         'Topic :: System :: Distributed Computing'
     ],
-	python_requires='>=3.12'
+    # torch dpendency doesn't work in python3.13 yet
+	python_requires='>=3.12, <3.13'
 )
