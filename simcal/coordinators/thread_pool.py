@@ -3,10 +3,10 @@ import threading
 from functools import wraps
 from multiprocessing import cpu_count
 
-from simcal.coordinators import Base
+from simcal.coordinators import Base as BaseCoordinator
 
 
-class ThreadPool(Base):
+class ThreadPool(BaseCoordinator):
     def __init__(self, pool_size=None):  # hard_timelimit=None
         super().__init__()  # hard_timelimit)
         self.managementLock = threading.Lock()

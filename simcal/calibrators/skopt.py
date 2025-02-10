@@ -4,7 +4,7 @@ from time import time
 import skopt.optimizer as skopt
 from skopt.space import *
 
-import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
@@ -25,7 +25,7 @@ def _eval(simulator: Simulator, params, calibration, stoptime):
 # "RF" for Random Forrest Regresor
 # "ET" for Extra Trees Regressor or
 # "GBRT" for Gradient Boosting Quantile Regressor trees
-class ScikitOptimizer(sc.Base):
+class ScikitOptimizer(BaseCalibrator):
     def __init__(self, starts, base_estimator="GP", seed=None):
         super().__init__()
         self.seed = seed

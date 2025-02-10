@@ -64,7 +64,7 @@ simulator = ExampleSimulator(ground_truth_data, loss)
 # calibrator = sc.calibrators.Grid()
 # calibrator = sc.calibrators.Random()
 calibrator = sc.calibrators.ScikitOptimizer(1000)
-#calibrator = sc.calibrators.GeneticAlgorithm(100,10,.50,.01)
+# calibrator = sc.calibrators.GeneticAlgorithm(100,10,.50,.01)
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))

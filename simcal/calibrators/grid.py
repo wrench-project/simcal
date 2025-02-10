@@ -8,7 +8,7 @@ from numpy import linspace
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Value
 
 
@@ -16,7 +16,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
     return calibration, simulator(calibration, stoptime)
 
 
-class Grid(Base):
+class Grid(BaseCalibrator):
     def __init__(self):
         super().__init__()
 

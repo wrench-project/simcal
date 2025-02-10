@@ -4,7 +4,7 @@ from time import time
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 from simcal.parameters import Value
 
@@ -13,7 +13,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
     return calibration, simulator(calibration, stoptime)
 
 
-class Random(Base):
+class Random(BaseCalibrator):
     def __init__(self, seed=None):
         super().__init__()
         if seed:

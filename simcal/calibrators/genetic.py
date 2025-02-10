@@ -3,7 +3,7 @@ from itertools import count
 from time import time
 from typing import Callable
 
-import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
@@ -19,7 +19,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
         raise exception.SimulationFail(calibration, e)
 
 
-class GeneticAlgorithm(sc.Base):
+class GeneticAlgorithm(BaseCalibrator):
     def __init__(self,
                  generation_size,
                  breeders,

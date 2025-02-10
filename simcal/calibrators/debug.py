@@ -4,7 +4,7 @@ from typing import TextIO
 
 import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Value
 
 
@@ -12,7 +12,7 @@ def _eval(simulator, calibration):
     return simulator(calibration), calibration
 
 
-class Debug(Base):
+class Debug(BaseCalibrator):
     def __init__(self, logger: TextIO = sys.stdout):
         super().__init__()
         self.logger = logger

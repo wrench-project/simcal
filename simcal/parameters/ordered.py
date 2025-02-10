@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import Self, TYPE_CHECKING
 
-from simcal.parameters.base import Base
+from simcal.parameters.base import Base as BaseParameter
+
 
 if TYPE_CHECKING:
     from simcal.parameters import Value
 
 
-class Ordered(Base):
+class Ordered(BaseParameter):
     def __init__(self, range_start, range_end, integer=False, from_normalize_override=None, to_normalize_override=None):
         super().__init__()
         self.range_start = range_start

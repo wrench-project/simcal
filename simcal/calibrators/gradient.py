@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
@@ -11,7 +12,7 @@ from simcal.parameters import Base as parameter
 from simcal.parameters import Value
 
 
-class GradientDescent(sc.Base):
+class GradientDescent(BaseCalibrator):
     def __init__(self, delta: float | int, epsilon: float | int, seed: int | None = None,
                  early_reject_loss: float | int | None = None):
         super().__init__()
