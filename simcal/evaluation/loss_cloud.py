@@ -65,6 +65,13 @@ class LossCloud(BaseCalibrator):
             cloud_points += incidental_points
             # print(lower_bound)
             # print(upper_bound)
+            for key in upper_bound:
+                if upper_bound[key] == float('inf'):
+                    upper_bound[key] = lower_bound[key]
+
+                elif lower_bound[key] == float('inf'):
+                    lower_bound[key] = upper_bound[key]
+
             if output_orchestrator:
                 output_orchestrator.ready()
             cloud_points += self.search_cube(simulator, lower_bound, upper_bound, parameter_vector, target_loss,
@@ -89,19 +96,23 @@ class LossCloud(BaseCalibrator):
                 recommended_epsilon,
                 iterations_remaining, stoptime, output_orchestrator))
             results = coordinator.collect()
-            for param_value, param_key, ret_epsilon, incidental_points, iterations_used in results:
+            for param_value, param_key, ret_epsilon, incidental_points, iterations_used, out_of_bounds in results:
                 cloud_points += incidental_points
                 recommended_epsilons.append(ret_epsilon)
                 cube_vector[param_key] = param_value
+                if out_of_bounds:
+                    cube_vector[param_key] = float('inf')
                 iterations_remaining -= iterations_used
 
         results = coordinator.await_all()
 
-        for param_value, param_key, recommended_epsilon, incidental_points, iterations_used in results:
+        for param_value, param_key, recommended_epsilon, incidental_points, iterations_used, out_of_bounds in results:
 
             cloud_points += incidental_points
             recommended_epsilons.append(recommended_epsilon)
             cube_vector[param_key] = param_value
+            if out_of_bounds:
+                cube_vector[param_key] = float('inf')
             iterations_remaining -= iterations_used
         return cube_vector, iterations_remaining, numpy.average(recommended_epsilons), cloud_points
 
@@ -177,7 +188,7 @@ class LossCloud(BaseCalibrator):
         current = self._ordered_params[param_key].from_normalized(current)
         # print("Apparently we dont with loop")
         # print(current, param_key, recommended_epsilon, cloud_points, iterations)
-        return current, param_key, recommended_epsilon, cloud_points, iterations
+        return current, param_key, recommended_epsilon, cloud_points, iterations, out_of_range
 
     def search_cube(self, simulator: Simulator, lower_bound, upper_bound, center, target_loss,
                     max_points=None, iterations=None, stoptime=None, coordinator=None, output_orchestrator=None):
