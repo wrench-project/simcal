@@ -1,15 +1,17 @@
+import os
 import sys
 import time
 from enum import Enum
 from logging import warning
+from pathlib import Path
 
 import numpy
-from pathlib import Path
+
 import simcal.simulator as Simulator
 from simcal import parameter, exception
 from simcal.calibrators import Base as BaseCalibrator
 from simcal.calibrators.grid import _RectangularIterator
-import os
+
 
 class LossCloud(BaseCalibrator):
     def __init__(self):
@@ -54,31 +56,39 @@ class LossCloud(BaseCalibrator):
                 = self.find_cube_bound(_Direction.UPPER, simulator, parameter_vector,
                                        target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
                                        iterations=iterations_remaining,
-                                       stoptime=stoptime, coordinator=coordinator, output_orchestrator=output_orchestrator)
+                                       stoptime=stoptime, coordinator=coordinator,
+                                       output_orchestrator=output_orchestrator)
             cloud_points += incidental_points
 
             lower_bound, iterations_remaining, recommended_epsilon, incidental_points \
                 = self.find_cube_bound(_Direction.LOWER, simulator, parameter_vector,
                                        target_loss, hypercube_loss, loss_tolerance, initial_epsilon,
                                        iterations=iterations_remaining,
-                                       stoptime=stoptime, coordinator=coordinator, output_orchestrator=output_orchestrator)
+                                       stoptime=stoptime, coordinator=coordinator,
+                                       output_orchestrator=output_orchestrator)
             cloud_points += incidental_points
             # print(lower_bound)
             # print(upper_bound)
             for key in upper_bound:
-                if upper_bound[key] == float('inf'):
-                    upper_bound[key] = lower_bound[key]
+                if upper_bound[key] == float('inf') and lower_bound[key] == float('inf'):
+                    lower_bound[key] = parameter_vector[key]
+                    upper_bound[key] = parameter_vector[key]
+                elif upper_bound[key] == float('inf'):
+                    delta = parameter_vector[key] - lower_bound[key]
+                    upper_bound[key] = parameter_vector[key] + delta
 
                 elif lower_bound[key] == float('inf'):
-                    lower_bound[key] = upper_bound[key]
+                    delta = parameter_vector[key] - upper_bound[key]
+                    lower_bound[key] = parameter_vector[key] + delta
 
             if output_orchestrator:
                 output_orchestrator.ready()
             cloud_points += self.search_cube(simulator, lower_bound, upper_bound, parameter_vector, target_loss,
                                              max_points=max_points,
-                                             iterations=iterations_remaining, stoptime=stoptime, coordinator=coordinator,
+                                             iterations=iterations_remaining, stoptime=stoptime,
+                                             coordinator=coordinator,
                                              output_orchestrator=output_orchestrator)
-        return cloud_points
+        return cloud_points,(upper_bound,lower_bound)
 
     def find_cube_bound(self, direction, simulator: Simulator, center, target_loss, hypercube_loss, loss_tolerance,
                         initial_epsilon,
@@ -251,6 +261,7 @@ class OutputOrchestrator:
         self.active_path = self.dir / "cloud-incidental.list"
         self.active_file = None
         os.makedirs(self.dir, exist_ok=True)
+
     def __enter__(self):
         return self
 
@@ -259,7 +270,7 @@ class OutputOrchestrator:
             self.active_file.write("]\n")
             self.active_file.flush()
             self.active_file.close()
-            self.active_file=None
+            self.active_file = None
         # Optionally suppress exceptions if you want (return True to suppress)
         return False
 
@@ -268,7 +279,7 @@ class OutputOrchestrator:
             self.active_file.write("]\n")
             self.active_file.flush()
             self.active_file.close()
-            self.active_file=None
+            self.active_file = None
 
     def ready(self):
         self.initiated = True
@@ -285,7 +296,7 @@ class OutputOrchestrator:
         if not self.active_file:
             self.active_file = open(self.active_path, 'w')
             self.active_file.write("[\n")
-        self.active_file.write(str(x)+",\n")
+        self.active_file.write(str(x) + ",\n")
 
     def __add__(self, other):
         if isinstance(other, list | tuple):
@@ -302,19 +313,21 @@ class OutputOrchestrator:
     def __repr__(self):
         return f"OutputOrchestrator({self.dir}) at rez {self.active_rez}"
 
+
 class DebugOrchestrator:
     def __init__(self):
         self.active_rez = 1
         self.initiated = False
         self.active_path = "cloud-incidental.list"
         self.active_file = None
+
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.active_file:
             self.active_file.write("]\n")
-            self.active_file=None
+            self.active_file = None
         # Optionally suppress exceptions if you want (return True to suppress)
         return False
 
@@ -322,11 +335,11 @@ class DebugOrchestrator:
         if self.active_file:
             self.active_file.write("]\n")
             self.active_file.flush()
-            self.active_file=None
+            self.active_file = None
 
     def ready(self):
         self.initiated = True
-        self.active_path =  f"cloud-{self.active_rez}.list"
+        self.active_path = f"cloud-{self.active_rez}.list"
         self.switch_file()
 
     def uprez(self):
@@ -340,7 +353,7 @@ class DebugOrchestrator:
             self.active_file = sys.stdout
             print(self.active_path)
             self.active_file.write("[\n")
-        self.active_file.write(str(x)+",\n")
+        self.active_file.write(str(x) + ",\n")
         print(x)
 
     def __add__(self, other):
@@ -357,6 +370,7 @@ class DebugOrchestrator:
 
     def __repr__(self):
         return f"OutputOrchestrator({self.dir}) at rez {self.active_rez}"
+
 
 class WithNone:
     def __enter__(self):
