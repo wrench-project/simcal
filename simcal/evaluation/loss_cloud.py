@@ -31,6 +31,7 @@ class LossCloud(BaseCalibrator):
                    initial_epsilon,
                    max_points=None,
                    iterations=None, timelimit=None, coordinator=None, output_dir=None):
+        #if output_ dir is sys.stdout, it will print points to stdout
         from simcal.coordinators import Base as Coordinator
         if coordinator is None:
             coordinator = Coordinator()
@@ -43,10 +44,10 @@ class LossCloud(BaseCalibrator):
         cloud_points = []
         output_orchestrator = WithNone()
         if output_dir is not None:
-            if output_dir:
-                output_orchestrator = OutputOrchestrator(output_dir)
-            else:
+            if output_dir==sys.stdout:
                 output_orchestrator = DebugOrchestrator()
+            else:
+                output_orchestrator = OutputOrchestrator(output_dir)
             cloud_points = 0
         with output_orchestrator:
             iterations_remaining = iterations
