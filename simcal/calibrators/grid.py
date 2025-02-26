@@ -33,7 +33,7 @@ class Grid(BaseCalibrator):
         if timelimit is not None:
             try:
                 stoptime = time() + timelimit
-                for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
+                for calibration in _RectangularIterator(self._parameter_list.ordered_params, self._parameter_list.categorical_params):
                     if time() > stoptime:
                         break
                     coordinator.allocate(_eval, (simulator, calibration, stoptime))

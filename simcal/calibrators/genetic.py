@@ -59,11 +59,11 @@ class GeneticAlgorithm(BaseCalibrator):
         return c
 
     def mutate(self, x):
-        for key in self._categorical_params:
+        for key in self._parameter_list.categorical_params:
             if random.random() < self.mutation:
-                x[key] = random.choice(self._categorical_params[key].get_categories())
-        for key in self._categorical_params:
-            param = self._categorical_params[key]
+                x[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
+        for key in self._parameter_list.categorical_params:
+            param = self._parameter_list.categorical_params[key]
             intermediate = param.to_normalized(x[key])
             intermediate += (random.random() - .5) * self.mutation
             intermediate = min(param.range_end, max(param.range_start, intermediate))
@@ -102,12 +102,12 @@ class GeneticAlgorithm(BaseCalibrator):
                 if not generation:
                     for i in range(self.generation_size):
                         calibration = {}
-                        for key in self._ordered_params:
-                            param = self._ordered_params[key]
+                        for key in self._parameter_list.ordered_params:
+                            param = self._parameter_list.ordered_params[key]
                             calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                        for key in self._categorical_params:
-                            calibration[key] = random.choice(self._categorical_params[key].get_categories())
+                        for key in self._parameter_list.categorical_params:
+                            calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
                         generation.append(calibration)
                 else:
                     generation = sorted(breeders, key=lambda x: x[1])[:self.elites]

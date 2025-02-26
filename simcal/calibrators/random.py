@@ -43,12 +43,12 @@ class Random(BaseCalibrator):
                     break
 
                 calibration = {}
-                for key in self._ordered_params:
-                    param = self._ordered_params[key]
+                for key in self._parameter_list.ordered_params:
+                    param = self._parameter_list.ordered_params[key]
                     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                for key in self._categorical_params:
-                    calibration[key] = random.choice(self._categorical_params[key].get_categories())
+                for key in self._parameter_list.categorical_params:
+                    calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
 
                 coordinator.allocate(self._eval, (simulator, calibration, stoptime))
                 results = coordinator.collect()

@@ -101,7 +101,7 @@ class LossCloud(BaseCalibrator):
             cloud_points = 0
         recommended_epsilon = initial_epsilon
         recommended_epsilons = []
-        for param in self._ordered_params.keys():
+        for param in self._parameter_list.ordered_params.keys():
             coordinator.allocate(self.binary_search, (
                 direction, param, simulator, center, target_loss, hypercube_loss, loss_tolerance,
                 recommended_epsilon,
@@ -133,7 +133,7 @@ class LossCloud(BaseCalibrator):
                       iterations_limit, stoptime, output_orchestrator):
 
         param_value = initial_point.copy()
-        initial_norm = self._ordered_params[param_key].to_normalized(param_value[param_key])
+        initial_norm = self._parameter_list.ordered_params[param_key].to_normalized(param_value[param_key])
         min_value = initial_norm
         max_value = initial_norm + initial_epsilon * direction.value
         current = max_value
@@ -146,14 +146,14 @@ class LossCloud(BaseCalibrator):
         out_of_range = False
         while True:
             # print("true is true")
-            if not self._ordered_params[param_key].is_valid_normalized(current):
+            if not self._parameter_list.ordered_params[param_key].is_valid_normalized(current):
                 # print(current, "We have gone out of range")
                 current = sorted(
-                    (self._ordered_params[param_key].range_start, current, self._ordered_params[param_key].range_end))[
+                    (self._parameter_list.ordered_params[param_key].range_start, current, self._parameter_list.ordered_params[param_key].range_end))[
                     1]
                 out_of_range = True
                 max_value = current
-            param_value[param_key] = self._ordered_params[param_key].from_normalized(current)
+            param_value[param_key] = self._parameter_list.ordered_params[param_key].from_normalized(current)
 
             ret = simulator(param_value, stoptime)
             iterations += 1
@@ -196,7 +196,7 @@ class LossCloud(BaseCalibrator):
 
         if recommended_epsilon is None:
             recommended_epsilon = initial_epsilon
-        current = self._ordered_params[param_key].from_normalized(current)
+        current = self._parameter_list.ordered_params[param_key].from_normalized(current)
         # print("Apparently we dont with loop")
         # print(current, param_key, recommended_epsilon, cloud_points, iterations)
         return current, param_key, recommended_epsilon, cloud_points, iterations, out_of_range
@@ -205,11 +205,11 @@ class LossCloud(BaseCalibrator):
                     max_points=None, iterations=None, stoptime=None, coordinator=None, output_orchestrator=None):
         categorical = {}
 
-        for key in self._categorical_params:
+        for key in self._parameter_list.categorical_params:
             categorical[key] = parameter.Categorical((center[key],))
         ordered = {}
-        for key, value in self._ordered_params.items():
-            ordered[key] = self._ordered_params[key].constrain(lower_bound[key], upper_bound[key])
+        for key, value in self._parameter_list.parameter_list.ordered_params.items():
+            ordered[key] = self._parameter_list.parameter_list.ordered_params[key].constrain(lower_bound[key], upper_bound[key])
         cloud_points = []
         if output_orchestrator:
             cloud_points = 0
@@ -298,6 +298,7 @@ class OutputOrchestrator:
             self.active_file = open(self.active_path, 'w')
             self.active_file.write("[\n")
         self.active_file.write(str(x) + ",\n")
+        self.active_file.flush()
 
     def __add__(self, other):
         if isinstance(other, list | tuple):

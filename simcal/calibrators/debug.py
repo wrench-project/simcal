@@ -31,12 +31,12 @@ class Debug(BaseCalibrator):
         self.log("Using Coordinator", coordinator)
 
         calibration = {}
-        for key in self._ordered_params:
-            param = self._ordered_params[key]
+        for key in self._parameter_list.ordered_params:
+            param = self._parameter_list.ordered_params[key]
             calibration[key] = param.from_normalized(0.5)
 
-        for key in self._categorical_params:
-            calibration[key] = self._categorical_params[key].get_categories()[0]
+        for key in self._parameter_list.categorical_params:
+            calibration[key] = self._parameter_list.categorical_params[key].get_categories()[0]
 
         self.log("Attempting execution", calibration)
         t0 = time()
