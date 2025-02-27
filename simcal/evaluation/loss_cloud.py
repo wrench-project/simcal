@@ -208,8 +208,8 @@ class LossCloud(BaseCalibrator):
         for key in self._parameter_list.categorical_params:
             categorical[key] = parameter.Categorical((center[key],))
         ordered = {}
-        for key, value in self._parameter_list.parameter_list.ordered_params.items():
-            ordered[key] = self._parameter_list.parameter_list.ordered_params[key].constrain(lower_bound[key], upper_bound[key])
+        for key, value in self._parameter_list.ordered_params.items():
+            ordered[key] = self._parameter_list.ordered_params[key].constrain(lower_bound[key], upper_bound[key])
         cloud_points = []
         if output_orchestrator:
             cloud_points = 0
