@@ -161,4 +161,4 @@ class GeneticAlgorithm(BaseCalibrator):
             if loss < current_ret[1]:
                 self.mark_calibration((current, loss))
                 current_ret = (current, loss)
-        return current_ret
+        return current_ret, loss

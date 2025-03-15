@@ -3,6 +3,7 @@ import threading
 from functools import wraps
 from multiprocessing import cpu_count
 
+import simcal.coordinators
 from simcal.coordinators import Base as BaseCoordinator
 
 

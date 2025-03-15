@@ -136,5 +136,5 @@ class ScikitOptimizer(BaseCalibrator):
     def to_regular_params(self, parameters, params):
         calibration = {}
         for param, value in zip(parameters, params):
-            calibration[param.name] = self._parameter_list.get_param([param.name]).apply_format(value)
+            calibration[param.name] = self._parameter_list.get_param(param.name).apply_format(value)
         return calibration
