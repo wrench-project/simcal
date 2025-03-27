@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import warnings
 from typing import Self
 from typing import TYPE_CHECKING
 
@@ -20,16 +21,17 @@ class Exponential(Ordered):
             end = int(end)
         self.start = start
         self.end = end
+        self.to_exponent_override = None
 
-    def constrain(self, new_range_start: float | Value, new_range_end: float | Value) -> Self:
+    def constrain(self, new_start: float | Value, new_end: float | Value) -> Self:
         from simcal.parameters import Value
-        if isinstance(new_range_start, Value):
-            new_range_start = new_range_start.value
-        if isinstance(new_range_end, Value):
-            new_range_end = new_range_end.value
-        ret = Exponential(new_range_start, new_range_end,self.integer)
-        ret.start = self.start
-        ret.end = self.end
+        if isinstance(new_start, Value):
+            new_start = new_start.value
+        if isinstance(new_end, Value):
+            new_end = new_end.value
+        ret = Exponential(self.to_exponent(new_start), self.to_exponent(new_end), self.integer)
+        ret.range_start = self.range_start
+        ret.range_end = self.range_end
         return ret
 
     def is_valid_value(self, x: float | Value) -> bool:
@@ -44,7 +46,19 @@ class Exponential(Ordered):
             value = int(value)
         return self.apply_format(value)
 
-    def to_normalized(self, x: float):
+    def to_exponent(self, x: int | float | Value) -> float :
+        if self.integer:
+            x = int(x)
+        if self.to_exponent_override:
+            return self.to_exponent_override(x)
+        else:
+            if self.to_normalize_override:
+                warnings.warn("to_normalize_override may conflict with to_exponent calculation, "
+                              "please provide a to_exponent_override as well")
+
+        return math.log2(x)
+
+    def to_normalized(self, x: int | float):
         if self.integer:
             x = int(x)
         if self.to_normalize_override:

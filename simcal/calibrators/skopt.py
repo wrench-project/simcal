@@ -4,11 +4,12 @@ from time import time
 import skopt.optimizer as skopt
 from skopt.space import *
 
-import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
+import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 from simcal.parameters import *
-import simcal.coordinators.base as Coordinator
+
 
 def _eval(simulator: Simulator, params, calibration, stoptime):
     try:
@@ -24,7 +25,7 @@ def _eval(simulator: Simulator, params, calibration, stoptime):
 # "RF" for Random Forrest Regresor
 # "ET" for Extra Trees Regressor or
 # "GBRT" for Gradient Boosting Quantile Regressor trees
-class ScikitOptimizer(sc.Base):
+class ScikitOptimizer(BaseCalibrator):
     def __init__(self, starts, base_estimator="GP", seed=None):
         super().__init__()
         self.seed = seed
@@ -35,10 +36,10 @@ class ScikitOptimizer(sc.Base):
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         from simcal.coordinators import Base as Coordinator
-
+        best_loss = None
         self._categorical_params = {}
         parameters = []
-        for (key, param) in self._ordered_params.items():
+        for (key, param) in self._parameter_list.ordered_params.items():
             if isinstance(param, Exponential):
                 if param.integer:
                     parameters.append(Integer(int(param.from_normalized(param.range_start)),
@@ -95,11 +96,21 @@ class ScikitOptimizer(sc.Base):
                         continue
                     # print(best_loss,loss,current)
                     opt.tell(tell, loss)
+                    if best_loss is None or loss < best_loss:
+                        best_loss = loss
+                        results = opt.get_result()
+                        self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
+
             results = coordinator.await_all()
             for current, loss, tell in results:
                 if loss is None:
                     continue
                 opt.tell(tell, loss)
+                if best_loss is None or loss < best_loss:
+                    best_loss = loss
+                    results = opt.get_result()
+                    self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
+
         except exception.Timeout:
             # print("Random had to catch a timeout")
             results = opt.get_result()
@@ -125,9 +136,5 @@ class ScikitOptimizer(sc.Base):
     def to_regular_params(self, parameters, params):
         calibration = {}
         for param, value in zip(parameters, params):
-            if param.name in self._ordered_params:
-                calibration[param.name] = self._ordered_params[param.name].apply_format(value)
-            else:
-                calibration[param.name] = self._categorical_params[param.name].apply_format(value)
-
+            calibration[param.name] = self._parameter_list.get_param(param.name).apply_format(value)
         return calibration

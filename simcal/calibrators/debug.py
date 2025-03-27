@@ -4,7 +4,7 @@ from typing import TextIO
 
 import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Value
 
 
@@ -12,7 +12,7 @@ def _eval(simulator, calibration):
     return simulator(calibration), calibration
 
 
-class Debug(Base):
+class Debug(BaseCalibrator):
     def __init__(self, logger: TextIO = sys.stdout):
         super().__init__()
         self.logger = logger
@@ -31,12 +31,12 @@ class Debug(Base):
         self.log("Using Coordinator", coordinator)
 
         calibration = {}
-        for key in self._ordered_params:
-            param = self._ordered_params[key]
+        for key in self._parameter_list.ordered_params:
+            param = self._parameter_list.ordered_params[key]
             calibration[key] = param.from_normalized(0.5)
 
-        for key in self._categorical_params:
-            calibration[key] = self._categorical_params[key].get_categories()[0]
+        for key in self._parameter_list.categorical_params:
+            calibration[key] = self._parameter_list.categorical_params[key].get_categories()[0]
 
         self.log("Attempting execution", calibration)
         t0 = time()

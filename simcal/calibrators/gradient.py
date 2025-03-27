@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
@@ -11,7 +12,7 @@ from simcal.parameters import Base as parameter
 from simcal.parameters import Value
 
 
-class GradientDescent(sc.Base):
+class GradientDescent(BaseCalibrator):
     def __init__(self, delta: float | int, epsilon: float | int, seed: int | None = None,
                  early_reject_loss: float | int | None = None):
         super().__init__()
@@ -26,7 +27,7 @@ class GradientDescent(sc.Base):
         param_vector = param_vector.copy()
         self._clamp_vector(param_vector, vector_mapping)
         for i, key in enumerate(vector_mapping):
-            args[key] = self._ordered_params[key].from_normalized(param_vector[i])
+            args[key] = self._parameter_list.ordered_params[key].from_normalized(param_vector[i])
         return args
 
     def _evaluate_vector(self, simulator: Simulator, param_vector, vector_mapping, categoricals, stoptime):
@@ -46,27 +47,27 @@ class GradientDescent(sc.Base):
         return param_vector
 
     def _get_raw_param(self, index, vector_mapping):
-        return self._ordered_params[vector_mapping[index]]
+        return self._parameter_list.ordered_params[vector_mapping[index]]
 
     def descend(self, simulator: Simulator, initial_point, stoptime):
         # TODO (later) gracefully handle early stops
 
-        if not self._categorical_params:
+        if not self._parameter_list.categorical_params:
             categorical_params = [None]
         else:
-            categorical_params = self._categorical_params
+            categorical_params = self._parameter_list.categorical_params
         learning_rate = self.delta
         best_loss = None
         best = initial_point
         previous_loss = None
-        vector_mapping = list(self._ordered_params.keys())
+        vector_mapping = list(self._parameter_list.ordered_params.keys())
         dimensions = len(vector_mapping)
         param_vector = np.empty(dimensions)
 
         try:
             while True:
                 for i, key in enumerate(vector_mapping):
-                    param_vector[i] = self._ordered_params[key].to_normalized(best[key])
+                    param_vector[i] = self._parameter_list.ordered_params[key].to_normalized(best[key])
                 # Get current loss and best categoricals
                 best_categorical = None
                 best_c_loss = None
@@ -138,6 +139,7 @@ class GradientDescent(sc.Base):
                     if actual < best_loss:
                         best_loss = actual
                         best = self._populate(backtrack_test, vector_mapping, best_categorical)
+                        self.mark_calibration((best, best_loss))
                         in_minima = True
                     if last_check:
                         break
@@ -160,6 +162,7 @@ class GradientDescent(sc.Base):
                 e.result = (best, best_loss)
             raise e
         except exception.Timeout:
+
             # print("best loss, Timed out", best_loss)
             return best, best_loss
         except BaseException as e:
@@ -171,14 +174,13 @@ class GradientDescent(sc.Base):
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
-        if len(self._ordered_params) <= 0:
+        if len(self._parameter_list.ordered_params) <= 0:
             internal = sc.Grid()
         else:
             internal = sc.Random(self.seed)
         # print("starting new gradient")
-        internal._ordered_params = self._ordered_params
-        internal._categorical_params = self._categorical_params
-        if len(self._ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
+        internal._parameter_list = self._parameter_list
+        if len(self._parameter_list.ordered_params) <= 0:  # of there are no ordered parameters, we are no different from a grid search, so let grid handle it
             return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
         else:  # we already have a good calibrator for random points, let it figure out the starts, then route back through us for the descending
             if timelimit is None:
@@ -186,7 +188,9 @@ class GradientDescent(sc.Base):
             else:
                 stoptime = time.time() + timelimit
             internal._eval = self.descend
-            return internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
+            res = internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
+            self.timeline+=internal.timeline
+            return res
 
     def _timeout_shortout(self, stoptime):
         if stoptime is not None:
