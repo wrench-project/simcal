@@ -3,7 +3,7 @@ from itertools import count
 from time import time
 from typing import Callable
 
-import simcal.calibrators as sc
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
@@ -19,7 +19,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
         raise exception.SimulationFail(calibration, e)
 
 
-class GeneticAlgorithm(sc.Base):
+class GeneticAlgorithm(BaseCalibrator):
     def __init__(self,
                  generation_size,
                  breeders,
@@ -59,11 +59,11 @@ class GeneticAlgorithm(sc.Base):
         return c
 
     def mutate(self, x):
-        for key in self._categorical_params:
+        for key in self._parameter_list.categorical_params:
             if random.random() < self.mutation:
-                x[key] = random.choice(self._categorical_params[key].get_categories())
-        for key in self._categorical_params:
-            param = self._categorical_params[key]
+                x[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
+        for key in self._parameter_list.categorical_params:
+            param = self._parameter_list.categorical_params[key]
             intermediate = param.to_normalized(x[key])
             intermediate += (random.random() - .5) * self.mutation
             intermediate = min(param.range_end, max(param.range_start, intermediate))
@@ -102,12 +102,12 @@ class GeneticAlgorithm(sc.Base):
                 if not generation:
                     for i in range(self.generation_size):
                         calibration = {}
-                        for key in self._ordered_params:
-                            param = self._ordered_params[key]
+                        for key in self._parameter_list.ordered_params:
+                            param = self._parameter_list.ordered_params[key]
                             calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                        for key in self._categorical_params:
-                            calibration[key] = random.choice(self._categorical_params[key].get_categories())
+                        for key in self._parameter_list.categorical_params:
+                            calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
                         generation.append(calibration)
                 else:
                     generation = sorted(breeders, key=lambda x: x[1])[:self.elites]
@@ -131,6 +131,7 @@ class GeneticAlgorithm(sc.Base):
                     if loss is None:
                         continue
                     if current_ret is None or loss < current_ret[1]:
+                        self.mark_calibration((current, loss))
                         current_ret = (current, loss)
                     new_gen.append((current, loss, self.fitness_noise(loss)))
                 breeders = sorted(new_gen, key=lambda x: x[2])[:max(self.breeders, self.elites)]
@@ -139,6 +140,7 @@ class GeneticAlgorithm(sc.Base):
                 if loss is None:
                     continue
                 if loss < current_ret[1]:
+                    self.mark_calibration((current, loss))
                     current_ret = (current, loss)
 
         # TODO Everything bellow here
@@ -157,5 +159,6 @@ class GeneticAlgorithm(sc.Base):
             if loss is None:
                 continue
             if loss < current_ret[1]:
+                self.mark_calibration((current, loss))
                 current_ret = (current, loss)
-        return current_ret
+        return current_ret, loss

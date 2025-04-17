@@ -74,7 +74,8 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
 
-calibration, loss = calibrator.calibrate(simulator, timelimit=79200, coordinator=coordinator)
+calibration, loss = calibrator.calibrate(simulator, timelimit=60, coordinator=coordinator)
+print(calibrator.timeline)
 print("final calibration")
 print(calibration)
 print("Expected")

@@ -4,7 +4,7 @@ from time import time
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 from simcal.parameters import Value
 
@@ -13,7 +13,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
     return calibration, simulator(calibration, stoptime)
 
 
-class Random(Base):
+class Random(BaseCalibrator):
     def __init__(self, seed=None):
         super().__init__()
         if seed:
@@ -43,12 +43,12 @@ class Random(Base):
                     break
 
                 calibration = {}
-                for key in self._ordered_params:
-                    param = self._ordered_params[key]
+                for key in self._parameter_list.ordered_params:
+                    param = self._parameter_list.ordered_params[key]
                     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                for key in self._categorical_params:
-                    calibration[key] = random.choice(self._categorical_params[key].get_categories())
+                for key in self._parameter_list.categorical_params:
+                    calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
 
                 coordinator.allocate(self._eval, (simulator, calibration, stoptime))
                 results = coordinator.collect()
@@ -59,6 +59,7 @@ class Random(Base):
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
+                        self.mark_calibration((best, best_loss))
             results = coordinator.await_all()
             for current, loss in results:
                 if loss is None:
@@ -67,6 +68,7 @@ class Random(Base):
                 if best is None or loss < best_loss:
                     best = current
                     best_loss = loss
+                    self.mark_calibration((best, best_loss))
         except exception.Timeout:
             #print("Random had to catch a timeout")
             return best, best_loss

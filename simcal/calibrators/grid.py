@@ -8,7 +8,7 @@ from numpy import linspace
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
-from simcal.calibrators.base import Base
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Value
 
 
@@ -16,7 +16,7 @@ def _eval(simulator: Simulator, calibration, stoptime):
     return calibration, simulator(calibration, stoptime)
 
 
-class Grid(Base):
+class Grid(BaseCalibrator):
     def __init__(self):
         super().__init__()
 
@@ -33,7 +33,7 @@ class Grid(Base):
         if timelimit is not None:
             try:
                 stoptime = time() + timelimit
-                for calibration in _RectangularIterator(self._ordered_params, self._categorical_params):
+                for calibration in _RectangularIterator(self._parameter_list.ordered_params, self._parameter_list.categorical_params):
                     if time() > stoptime:
                         break
                     coordinator.allocate(_eval, (simulator, calibration, stoptime))
@@ -44,6 +44,7 @@ class Grid(Base):
                         if best is None or loss < best_loss:
                             best = current
                             best_loss = loss
+                            self.mark_calibration((best, best_loss))
                 results = coordinator.await_all()
                 for current, loss in results:
                     if loss is None:
@@ -51,6 +52,7 @@ class Grid(Base):
                     if best is None or loss < best_loss:
                         best = current
                         best_loss = loss
+                        self.mark_calibration((best, best_loss))
             except exception.Timeout:
                 return best, best_loss
             except exception.EarlyTermination as e:

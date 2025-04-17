@@ -68,6 +68,15 @@ class Value(json.JSONEncoder):
         """
         return str(self)
 
+    def __int__(self) -> int:
+        """
+        Returns the underlying value as an int.
+
+        :return: The underlying value as an int.
+        :rtype: int
+        """
+        return int(self.value)
+
     def __float__(self) -> float:
         """
         Returns the underlying float value.
