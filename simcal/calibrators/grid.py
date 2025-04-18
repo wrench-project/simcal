@@ -88,7 +88,7 @@ class _RectangularIterator(object):
         categorical_params_list = []
         # print(categorical_params)
         if not categorical_params:
-            self._categorical_params = [None]
+            self._categorical_params = [[None]]
         else:
             for key in categorical_params:
                 categories = []
@@ -104,7 +104,7 @@ class _RectangularIterator(object):
         if not self._ordered_params:
             for c in product(*self._categorical_params):  # send off each combination of categorical paramiters for this grid point
                 ret = {}
-                if c is not None:
+                if c[0] is not None:
                     for param in c:  # repackage categorical params for calibrator
                         ret[param[0]] = param[1]  # param is a touple (name,value)
                 yield ret
@@ -125,7 +125,7 @@ class _RectangularIterator(object):
                             for index, value in enumerate(i):  # repackcage ordered params for calibrator
                                 name = self._ordered_params_conversion[index]
                                 ret[name] = self._ordered_params[index].from_normalized(value)
-                            if c is not None:
+                            if c[0] is not None:
                                 for param in c:  # repackage categorical params for calibrator
                                     ret[param[0]] = param[1]  # param is a touple (name,value)\
                             yield ret

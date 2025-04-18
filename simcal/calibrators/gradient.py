@@ -54,7 +54,7 @@ class GradientDescent(BaseCalibrator):
         # TODO (later) gracefully handle early stops
 
         if not self._parameter_list.categorical_params:
-            categorical_params = None
+            categorical_params = [None]
         else:
             categorical_params = self._parameter_list.categorical_params
         learning_rate = self.delta
@@ -71,9 +71,11 @@ class GradientDescent(BaseCalibrator):
                     param_vector[i] = self._parameter_list.ordered_params[key].to_normalized(best[key])
                 # Get current loss and best categoricals
                 categorical_base = {}
+
                 for c in categorical_params:
-                    first = categorical_params[c].get_categories()[0]
-                    categorical_base[c] = categorical_params[c].apply_format(first)
+                    if c is not None:
+                        first = categorical_params[c].get_categories()[0]
+                        categorical_base[c] = categorical_params[c].apply_format(first)
                 best_categorical = {}
                 for c in categorical_params:
                     best_c_loss = None
