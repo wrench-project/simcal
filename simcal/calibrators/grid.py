@@ -95,14 +95,14 @@ class _RectangularIterator(object):
                 for option in categorical_params[key].get_categories():
                     categories.append((key, option))
                 categorical_params_list.append(categories)
-            self._categorical_params = product(*categorical_params_list)
+            self._categorical_params = categorical_params_list
 
     def __iter__(self):
         denominator = 1
         cores = []  # [[0, 1]...]
         current_sets = []  # [{0, 1}...]
         if not self._ordered_params:
-            for c in self._categorical_params:  # send off each combination of categorical paramiters for this grid point
+            for c in product(*self._categorical_params):  # send off each combination of categorical paramiters for this grid point
                 ret = {}
                 if c is not None:
                     for param in c:  # repackage categorical params for calibrator
@@ -120,14 +120,14 @@ class _RectangularIterator(object):
             for i in sorted(product(*cores), reverse=True, key=_grid_key):
                 for j, cs in zip(i, current_sets):
                     if j in cs:  # prevent repeats by requiring atleast 1 element of the touple to be from the current set of numbers
-                        for c in self._categorical_params:  # send off each combination of categorical paramiters for this grid point
+                        for c in product(*self._categorical_params):  # send off each combination of categorical paramiters for this grid point
                             ret = {}
                             for index, value in enumerate(i):  # repackcage ordered params for calibrator
                                 name = self._ordered_params_conversion[index]
                                 ret[name] = self._ordered_params[index].from_normalized(value)
                             if c is not None:
                                 for param in c:  # repackage categorical params for calibrator
-                                    ret[param[0]] = param[1]  # param is a touple (name,value)
+                                    ret[param[0]] = param[1]  # param is a touple (name,value)\
                             yield ret
                         break  # This break is needed, I dont remember why, but without it you sample points multiple times.  I know it looks like it skips some points, but it doesnt seem too actually do so.
 
