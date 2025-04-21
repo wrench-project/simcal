@@ -40,7 +40,7 @@ coordinator = None#sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinat
 for calibrator in [
     #sc.calibrators.Grid(),
     #sc.calibrators.Random(),
-    sc.calibrators.ScikitOptimizer(1000,"GBRT"),#Dont Use GP for quantiles, use ET, RF, or GBRT
+    sc.calibrators.ScikitOptimizer(1000,"GBRT"),
     #sc.calibrators.GradientDescent(1, 1)
 ]:
     for i, _ in enumerate(refString):
