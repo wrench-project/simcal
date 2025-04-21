@@ -38,16 +38,16 @@ coordinator = None#sc.coordinators.ThreadPool(pool_size=1)  # Making a coordinat
 
 # scenario1({'a': 10, 'b': 4, 'c': 5, 'd': 3}, 0)
 for calibrator in [
-    sc.calibrators.Grid(),
+    #sc.calibrators.Grid(),
     #sc.calibrators.Random(),
-    #sc.calibrators.ScikitOptimizer(1000),
+    sc.calibrators.ScikitOptimizer(1000,"GBRT"),#Dont Use GP for quantiles, use ET, RF, or GBRT
     #sc.calibrators.GradientDescent(1, 1)
 ]:
     for i, _ in enumerate(refString):
         calibrator.add_param("word" + str(i + 1), sc.parameter.Categorical(list(set(refString))))
     calibrator.add_param("answer", sc.parameter.Ordinal([0, 1, 13, 21, 39, 42, 69, 72, 9000]).format("%d"))
     calibrator.add_param("x", sc.parameter.Linear(0, 10).format("%.2f"))
-    calibration, loss = calibrator.calibrate(simulator, timelimit=1200, coordinator=coordinator)
+    calibration, loss = calibrator.calibrate(simulator, timelimit=120, coordinator=coordinator)
     print("final calibration")
     print(calibration)
     print(loss)
