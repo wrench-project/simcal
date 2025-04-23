@@ -6,6 +6,7 @@ from pathlib import Path
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 import simcal as sc
+import simcal.exceptions
 from groundtruth import ground_truth
 
 simple_json_sim = Path(os.path.dirname(os.path.realpath(__file__)))
@@ -73,8 +74,11 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
 coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
-
-calibration, loss = calibrator.calibrate(simulator, timelimit=120, coordinator=coordinator)
+try:
+    calibration, loss = calibrator.calibrate(simulator, timelimit=120, coordinator=coordinator)
+except simcal.exceptions.EarlyTermination as e:
+    print(e.result)
+    raise(e.exception)
 print(calibrator.timeline)
 print("final calibration")
 print(calibration)
