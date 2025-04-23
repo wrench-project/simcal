@@ -84,7 +84,7 @@ class Value(json.JSONEncoder):
         :return: The underlying float value.
         :rtype: float
         """
-        return self.value
+        return float(self.value)
 
     def __neg__(self) -> Value:
         """

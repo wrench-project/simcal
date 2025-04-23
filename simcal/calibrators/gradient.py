@@ -4,10 +4,10 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 import simcal.calibrators as sc
-from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Base as parameter
 from simcal.parameters import Value
 
@@ -24,6 +24,7 @@ class GradientDescent(BaseCalibrator):
     def _populate(self, param_vector: list[float], vector_mapping: list[str], categoricals: dict[str, parameter]) -> \
             dict[str, parameter]:
         args = categoricals.copy()
+
         param_vector = param_vector.copy()
         self._clamp_vector(param_vector, vector_mapping)
         for i, key in enumerate(vector_mapping):
@@ -69,18 +70,24 @@ class GradientDescent(BaseCalibrator):
                 for i, key in enumerate(vector_mapping):
                     param_vector[i] = self._parameter_list.ordered_params[key].to_normalized(best[key])
                 # Get current loss and best categoricals
-                best_categorical = None
-                best_c_loss = None
+                categorical_base = {}
+
                 for c in categorical_params:
-                    categoricals = {}
+                    if c is not None:
+                        first = categorical_params[c].get_categories()[0]
+                        categorical_base[c] = categorical_params[c].apply_format(first)
+                best_categorical = {}
+                for c in categorical_params:
+                    best_c_loss = None
+                    categoricals = categorical_base.copy()
                     if c is not None:  # determin best categoricals at this point
-                        for param in c:  # repackage categorical params for calibrator
-                            categoricals[param[0]] = param[1]
+                        for param in categorical_params[c].get_categories():  # repackage categorical params for calibrator
+                            categoricals[c] = categorical_params[c].apply_format(param)
                             loss = self._evaluate_vector(simulator, param_vector, vector_mapping, categoricals,
                                                          stoptime)
                             # print("checking categoricals", loss)
                             if best_c_loss is None or loss < best_c_loss:
-                                best_categorical = categoricals.copy()
+                                best_categorical[c] = param
                                 best_c_loss = loss
                     else:
                         best_categorical = {}
@@ -189,7 +196,7 @@ class GradientDescent(BaseCalibrator):
                 stoptime = time.time() + timelimit
             internal._eval = self.descend
             res = internal.calibrate(simulator, early_stopping_loss, iterations, timelimit, coordinator)
-            self.timeline+=internal.timeline
+            self.timeline += internal.timeline
             return res
 
     def _timeout_shortout(self, stoptime):

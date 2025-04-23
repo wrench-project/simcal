@@ -2,13 +2,14 @@ from itertools import count
 from time import time
 
 import skopt.optimizer as skopt
-from skopt.space import *
+import skopt.space as sks
 
 from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
 from simcal.parameters import *
+import simcal.coordinators.base as Coordinator
 
 
 def _eval(simulator: Simulator, params, calibration, stoptime):
@@ -36,27 +37,37 @@ class ScikitOptimizer(BaseCalibrator):
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         from simcal.coordinators import Base as Coordinator
+
+
+        # self._categorical_params = {}
+
         best_loss = None
-        self._categorical_params = {}
+
+
         parameters = []
         for (key, param) in self._parameter_list.ordered_params.items():
             if isinstance(param, Exponential):
                 if param.integer:
-                    parameters.append(Integer(int(param.from_normalized(param.range_start)),
+                    parameters.append(sks.Integer(int(param.from_normalized(param.range_start)),
                                               int(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
                 else:
-                    parameters.append(Real(float(param.from_normalized(param.range_start)),
+                    parameters.append(sks.Real(float(param.from_normalized(param.range_start)),
                                            float(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
 
             elif isinstance(param, Linear):
                 if param.integer:
-                    parameters.append(Integer(param.start, param.end, 'uniform', 2, name=key))
+                    parameters.append(sks.Integer(param.start, param.end, 'uniform', 2, name=key))
                 else:
-                    parameters.append(Real(param.start, param.end, 'uniform', 2, name=key))
+                    parameters.append(sks.Real(param.start, param.end, 'uniform', 2, name=key))
+            elif isinstance(param, Ordinal):
+                parameters.append(sks.Integer(0, len(param.options)-1, 'uniform', 2, name=key))
             elif isinstance(param, Ordered):
-                parameters.append(Integer(param.range_start, param.range_end, 'uniform', 2, name=key))
-        for (key, param) in self._categorical_params.items():
-            parameters.append(Categorical(param.categories, name=key))
+                if param.integer:
+                    parameters.append(sks.Integer(param.range_start, param.range_end, 'uniform', 2, name=key))
+                else:
+                    parameters.append(sks.Real(param.range_start, param.range_end, 'uniform', 2, name=key))
+        for (key, param) in self._parameter_list.categorical_params.items():
+            parameters.append(sks.Categorical(param.categories, name=key))
 
         opt = skopt.Optimizer(
             dimensions=parameters,
@@ -136,5 +147,13 @@ class ScikitOptimizer(BaseCalibrator):
     def to_regular_params(self, parameters, params):
         calibration = {}
         for param, value in zip(parameters, params):
-            calibration[param.name] = self._parameter_list.get_param(param.name).apply_format(value)
+            coreParam=self.get_param(param.name)
+            #if isinstance(coreParam,scp.Categorical):
+            #    calibration[param.name] = coreParam.apply_format(value)
+            if isinstance(coreParam, Ordinal):
+                calibration[param.name] = coreParam.from_index(value)
+            else:
+                calibration[param.name] = coreParam.apply_format(value)
+
+
         return calibration
