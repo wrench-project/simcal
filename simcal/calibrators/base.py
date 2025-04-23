@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 from typing import Self
 
 import simcal.coordinators.base as Coordinator
@@ -6,7 +6,9 @@ import simcal.simulator as Simulator
 from simcal.parameters import Categorical, Value
 from simcal.parameters import Ordered
 from simcal.parameters import ParameterList
-import time
+from functools import wraps
+import simcal.exceptions as exception
+
 
 class Base(object):
     def __init__(self):
@@ -30,8 +32,41 @@ class Base(object):
                                   f"compute_loss, reference_data, iterations=None, timeout=None)")
 
     def add_param(self, name: str, parameter: Ordered | Categorical) -> Self:
-        self._parameter_list.add_param(name,parameter)
+        self._parameter_list.add_param(name, parameter)
         return self
 
     def get_param(self, name: str) -> Ordered | Categorical | None:
         return self._parameter_list.get_param(name)
+
+    def best_result(self, results):
+        best = None
+        best_loss = None
+        if self.current_best:
+            best, best_loss = self.current_best
+        for current, loss in results:
+            if loss is None:
+                continue
+            if best is None or loss < best_loss:
+                best = current
+                best_loss = loss
+                self.mark_calibration((best, best_loss))
+
+        self.current_best = best, best_loss
+        return best, best_loss
+
+    @staticmethod
+    def standard_exceptions(func):
+        @wraps(func)
+        def wrapper(self,*args, **kwargs):
+            try:
+                return func(self,*args, **kwargs)
+            except exception.Timeout:
+                return self.current_best
+            except exception.EarlyTermination as e:
+                ebest, eloss = e.result
+                if eloss is None or (self.current_best is not None and eloss > self.current_best[1]):
+                    e.result = self.current_best
+                raise e
+            except BaseException as e:
+                raise exception.EarlyTermination(self.current_best, e)
+        return wrapper

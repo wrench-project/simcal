@@ -4,12 +4,11 @@ from time import time
 import skopt.optimizer as skopt
 import skopt.space as sks
 
-from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
 import simcal.simulator as Simulator
+from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import *
-import simcal.coordinators.base as Coordinator
 
 
 def _eval(simulator: Simulator, params, calibration, stoptime):
@@ -33,26 +32,25 @@ class ScikitOptimizer(BaseCalibrator):
         self.base_estimator = base_estimator
         self.starts = starts
 
+    @BaseCalibrator.standard_exceptions
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
         from simcal.coordinators import Base as Coordinator
 
-
         # self._categorical_params = {}
-
-        best_loss = None
-
 
         parameters = []
         for (key, param) in self._parameter_list.ordered_params.items():
             if isinstance(param, Exponential):
                 if param.integer:
                     parameters.append(sks.Integer(int(param.from_normalized(param.range_start)),
-                                              int(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
+                                                  int(param.from_normalized(param.range_end)), 'log-uniform', 2,
+                                                  name=key))
                 else:
                     parameters.append(sks.Real(float(param.from_normalized(param.range_start)),
-                                           float(param.from_normalized(param.range_end)), 'log-uniform', 2, name=key))
+                                               float(param.from_normalized(param.range_end)), 'log-uniform', 2,
+                                               name=key))
 
             elif isinstance(param, Linear):
                 if param.integer:
@@ -60,7 +58,7 @@ class ScikitOptimizer(BaseCalibrator):
                 else:
                     parameters.append(sks.Real(param.start, param.end, 'uniform', 2, name=key))
             elif isinstance(param, Ordinal):
-                parameters.append(sks.Integer(0, len(param.options)-1, 'uniform', 2, name=key))
+                parameters.append(sks.Integer(0, len(param.options) - 1, 'uniform', 2, name=key))
             elif isinstance(param, Ordered):
                 if param.integer:
                     parameters.append(sks.Integer(param.range_start, param.range_end, 'uniform', 2, name=key))
@@ -101,59 +99,38 @@ class ScikitOptimizer(BaseCalibrator):
                 params = opt.ask()
                 calibration = self.to_regular_params(parameters, params)
                 coordinator.allocate(_eval, (simulator, params, calibration, stoptime))
-                results = coordinator.collect()
-                for current, loss, tell in results:
-                    if loss is None:
-                        continue
-                    # print(best_loss,loss,current)
-                    opt.tell(tell, loss)
-                    if best_loss is None or loss < best_loss:
-                        best_loss = loss
-                        results = opt.get_result()
-                        self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
+                self.best_result(coordinator.collect(), opt, parameters)
+            self.best_result(coordinator.await_all(), opt, parameters)
 
-            results = coordinator.await_all()
-            for current, loss, tell in results:
-                if loss is None:
-                    continue
-                opt.tell(tell, loss)
-                if best_loss is None or loss < best_loss:
-                    best_loss = loss
-                    results = opt.get_result()
-                    self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))
-
-        except exception.Timeout:
-            # print("Random had to catch a timeout")
+        finally:
             results = opt.get_result()
             results.x = self.to_regular_params(parameters, results.x)
-            return results.x, results.fun
-        except exception.EarlyTermination as e:
-            ebest, eloss = e.result
-            if eloss is None:
-                results = opt.get_result()
-                results.x = self.to_regular_params(parameters, results.x)
-                if results.fun < eloss:
-                    e.result = (results.x, results.fun)
-            raise e
-        except BaseException as e:
-            results = opt.get_result()
-            results.x = self.to_regular_params(parameters, results.x)
-            raise exception.EarlyTermination((results.x, results.fun), e)
-
-        results = opt.get_result()
-        results.x = self.to_regular_params(parameters, results.x)
-        return results.x, results.fun
+            self.mark_calibration(results.x, results.fun)
+        return self.current_best
 
     def to_regular_params(self, parameters, params):
         calibration = {}
         for param, value in zip(parameters, params):
-            coreParam=self.get_param(param.name)
-            #if isinstance(coreParam,scp.Categorical):
+            coreParam = self.get_param(param.name)
+            # if isinstance(coreParam,scp.Categorical):
             #    calibration[param.name] = coreParam.apply_format(value)
             if isinstance(coreParam, Ordinal):
                 calibration[param.name] = coreParam.from_index(value)
             else:
                 calibration[param.name] = coreParam.apply_format(value)
-
-
         return calibration
+
+    def best_result(self, results, opt, parameters):
+        best = None
+        best_loss = None
+        if self.current_best:
+            best, best_loss = self.current_best
+        for current, loss, tell in results:
+            if loss is None:
+                continue
+            # print(best_loss,loss,current)
+            opt.tell(tell, loss)
+            if best_loss is None or loss < best_loss:
+                best_loss = loss
+                results = opt.get_result()
+                self.mark_calibration((self.to_regular_params(parameters, results.x), best_loss))

@@ -70,6 +70,7 @@ class GeneticAlgorithm(BaseCalibrator):
             x[key] = param.from_normalized(intermediate)
         return x
 
+    @BaseCalibrator.standard_exceptions
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
@@ -86,79 +87,49 @@ class GeneticAlgorithm(BaseCalibrator):
             itr = range(0, iterations)
         generation = []
         breeders = []
-        current_ret = None
-        try:
-            start_time = time()
-            for itteration in itr:
-                if time() > stoptime:
-                    break
-                progress_t = 1
-                progress_i = 1
-                if timelimit:
-                    progress_t = (stoptime - start_time) / timelimit
-                if iterations:
-                    progress_i = itteration / iterations
-                progress = self.annealing(max(0, min(progress_t, progress_i)))
-                if not generation:
-                    for i in range(self.generation_size):
-                        calibration = {}
-                        for key in self._parameter_list.ordered_params:
-                            param = self._parameter_list.ordered_params[key]
-                            calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
 
-                        for key in self._parameter_list.categorical_params:
-                            calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
-                        generation.append(calibration)
-                else:
-                    generation = sorted(breeders, key=lambda x: x[1])[:self.elites]
-                    print(breeders)
-                    for i in range(self.generation_size - len(generation)):
-                        a, b = random.sample(breeders, 2)
-                        c = self.breed(a[0], b[0])
-                        c = self.mutate(c)
-                        generation.append(c)
-                # for key in self._ordered_params:
-                #     param = self._ordered_params[key]
-                #     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
-                #
-                # for key in self._categorical_params:
-                #     calibration[key] = random.choice(self._categorical_params[key].get_categories())
-                for pop in generation:
-                    coordinator.allocate(_eval, (simulator, pop, stoptime))
-                results = coordinator.await_all()
-                new_gen = []
-                for current, loss in results:
-                    if loss is None:
-                        continue
-                    if current_ret is None or loss < current_ret[1]:
-                        self.mark_calibration((current, loss))
-                        current_ret = (current, loss)
-                    new_gen.append((current, loss, self.fitness_noise(loss)))
-                breeders = sorted(new_gen, key=lambda x: x[2])[:max(self.breeders, self.elites)]
+        start_time = time()
+        for itteration in itr:
+            if time() > stoptime:
+                break
+            progress_t = 1
+            progress_i = 1
+            if timelimit:
+                progress_t = (stoptime - start_time) / timelimit
+            if iterations:
+                progress_i = itteration / iterations
+            progress = self.annealing(max(0, min(progress_t, progress_i)))
+            if not generation:
+                for i in range(self.generation_size):
+                    calibration = {}
+                    for key in self._parameter_list.ordered_params:
+                        param = self._parameter_list.ordered_params[key]
+                        calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
+
+                    for key in self._parameter_list.categorical_params:
+                        calibration[key] = random.choice(self._parameter_list.categorical_params[key].get_categories())
+                    generation.append(calibration)
+            else:
+                generation = sorted(breeders, key=lambda x: x[1])[:self.elites]
+                #print(breeders)
+                for i in range(self.generation_size - len(generation)):
+                    a, b = random.sample(breeders, 2)
+                    c = self.breed(a[0], b[0])
+                    c = self.mutate(c)
+                    generation.append(c)
+            # for key in self._ordered_params:
+            #     param = self._ordered_params[key]
+            #     calibration[key] = param.from_normalized(random.uniform(param.range_start, param.range_end))
+            #
+            # for key in self._categorical_params:
+            #     calibration[key] = random.choice(self._categorical_params[key].get_categories())
+            for pop in generation:
+                coordinator.allocate(_eval, (simulator, pop, stoptime))
             results = coordinator.await_all()
-            for current, loss, tell in results:
-                if loss is None:
-                    continue
-                if loss < current_ret[1]:
-                    self.mark_calibration((current, loss))
-                    current_ret = (current, loss)
-
-        # TODO Everything bellow here
-
-        except exception.Timeout:
-            return current_ret
-        except exception.EarlyTermination as e:
-            ebest, eloss = e.result
-            if eloss is None:
-                if current_ret[1] < eloss:
-                    e.result = current_ret
-            raise e
-        except BaseException as e:
-            raise exception.EarlyTermination(current_ret, e)
-        for current, loss, tell in results:
-            if loss is None:
-                continue
-            if loss < current_ret[1]:
-                self.mark_calibration((current, loss))
-                current_ret = (current, loss)
-        return current_ret, loss
+            self.best_result(results)
+            new_gen = []
+            for current, loss in results:
+                new_gen.append((current, loss, self.fitness_noise(loss)))
+            breeders = sorted(new_gen, key=lambda x: x[2])[:max(self.breeders, self.elites)]
+        self.best_result(coordinator.await_all())
+        return self.current_best

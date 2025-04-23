@@ -20,6 +20,7 @@ class Grid(BaseCalibrator):
     def __init__(self):
         super().__init__()
 
+    @BaseCalibrator.standard_exceptions
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
                   coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
@@ -31,38 +32,15 @@ class Grid(BaseCalibrator):
         best_loss = None
 
         if timelimit is not None:
-            try:
-                stoptime = time() + timelimit
-                for calibration in _RectangularIterator(self._parameter_list.ordered_params, self._parameter_list.categorical_params):
-                    if time() > stoptime:
-                        break
-                    coordinator.allocate(_eval, (simulator, calibration, stoptime))
-                    results = coordinator.collect()
-                    for current, loss in results:
-                        if loss is None:
-                            continue
-                        if best is None or loss < best_loss:
-                            best = current
-                            best_loss = loss
-                            self.mark_calibration((best, best_loss))
-                results = coordinator.await_all()
-                for current, loss in results:
-                    if loss is None:
-                        continue
-                    if best is None or loss < best_loss:
-                        best = current
-                        best_loss = loss
-                        self.mark_calibration((best, best_loss))
-            except exception.Timeout:
-                return best, best_loss
-            except exception.EarlyTermination as e:
-                ebest, eloss = e.result
-                if eloss is None or (best_loss is not None and eloss > best_loss):
-                    e.result = (best, best_loss)
-                raise e
-            except BaseException as e:
-                raise exception.EarlyTermination((best, best_loss), e)
-        return best, best_loss
+            stoptime = time() + timelimit
+            for calibration in _RectangularIterator(self._parameter_list.ordered_params,
+                                                    self._parameter_list.categorical_params):
+                if time() > stoptime:
+                    break
+                coordinator.allocate(_eval, (simulator, calibration, stoptime))
+                self.best_result(coordinator.collect())
+            self.best_result(coordinator.await_all())
+        return self.current_best
 
 
 def _grid_key(a):
@@ -102,7 +80,8 @@ class _RectangularIterator(object):
         cores = []  # [[0, 1]...]
         current_sets = []  # [{0, 1}...]
         if not self._ordered_params:
-            for c in product(*self._categorical_params):  # send off each combination of categorical paramiters for this grid point
+            for c in product(
+                    *self._categorical_params):  # send off each combination of categorical paramiters for this grid point
                 ret = {}
                 if c[0] is not None:
                     for param in c:  # repackage categorical params for calibrator
@@ -120,7 +99,8 @@ class _RectangularIterator(object):
             for i in sorted(product(*cores), reverse=True, key=_grid_key):
                 for j, cs in zip(i, current_sets):
                     if j in cs:  # prevent repeats by requiring atleast 1 element of the touple to be from the current set of numbers
-                        for c in product(*self._categorical_params):  # send off each combination of categorical paramiters for this grid point
+                        for c in product(
+                                *self._categorical_params):  # send off each combination of categorical paramiters for this grid point
                             ret = {}
                             for index, value in enumerate(i):  # repackcage ordered params for calibrator
                                 name = self._ordered_params_conversion[index]
