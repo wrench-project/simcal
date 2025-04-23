@@ -105,7 +105,7 @@ class ScikitOptimizer(BaseCalibrator):
         finally:
             results = opt.get_result()
             results.x = self.to_regular_params(parameters, results.x)
-            self.mark_calibration(results.x, results.fun)
+            self.mark_calibration((results.x, results.fun))
         return self.current_best
 
     def to_regular_params(self, parameters, params):
