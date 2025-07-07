@@ -24,7 +24,7 @@ setup(
     description='A simulator calibration framework',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/wrench-project/Grand-Unified-Calibration-Framework',
+    url='https://github.com/wrench-project/simcal',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
