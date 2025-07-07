@@ -89,3 +89,41 @@ class TestCalibratorParam(TestCase):
         self.assertEqual(lam, "c")
         lam = lambda_param.to_normalized(lam)
         self.assertAlmostEqual(lam, 0.8, delta=.01)
+
+    def test_ExponentialParam(self):
+        basic = Exponential(29, 32)
+        new_start = basic.from_normalized(0.4)
+        new_end = basic.from_normalized(0.6)
+        constrained = basic.constrain(new_start, new_end)
+        self.assertAlmostEqual(constrained.from_normalized(0), new_start, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(1), new_end, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(0.5), basic.from_normalized(0.5), delta=.01)
+
+        advanced = Exponential(9, 99)
+        advanced.range_start = 5
+        advanced.range_end = 10
+        new_start = advanced.from_normalized(6)
+        new_end = advanced.from_normalized(7)
+        constrained = advanced.constrain(new_start, new_end)
+        self.assertAlmostEqual(constrained.from_normalized(5), new_start, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(10), new_end, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(7.5), advanced.from_normalized(6.5), delta=.01)
+
+        basic = Linear(10, 100)
+        new_start = basic.from_normalized(0.4)
+        new_end = basic.from_normalized(0.6)
+        constrained = basic.constrain(new_start, new_end)
+        self.assertAlmostEqual(constrained.from_normalized(0), new_start, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(1), new_end, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(0.5), basic.from_normalized(0.5), delta=.01)
+
+        advanced = Linear(9, 99)
+        advanced.range_start = 1
+        advanced.range_end = 10
+        new_start = advanced.from_normalized(5)
+        new_end = advanced.from_normalized(6)
+        constrained = advanced.constrain(new_start, new_end)
+        self.assertAlmostEqual(constrained.from_normalized(1), new_start, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(10), new_end, delta=.01)
+        self.assertAlmostEqual(constrained.from_normalized(5.5), advanced.from_normalized(5.5), delta=.01)
+

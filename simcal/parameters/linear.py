@@ -18,16 +18,16 @@ class Linear(Ordered):  # requires testing
         self.start = start
         self.end = end
 
-    def constrain(self, new_range_start: float | Value, new_range_end: float | Value) -> Self:
+    def constrain(self, new_start: float | Value, new_end: float | Value) -> Self:
         from simcal.parameters import Value
-        if isinstance(new_range_start, Value):
-            new_range_start = new_range_start.value
-        if isinstance(new_range_end, Value):
-            new_range_end = new_range_end.value
+        if isinstance(new_start, Value):
+            new_start = new_start.value
+        if isinstance(new_end, Value):
+            new_end = new_end.value
 
-        ret = Linear(new_range_start, new_range_end,self.integer)
-        ret.start = self.start
-        ret.end = self.end
+        ret = Linear(new_start, new_end, self.integer)
+        ret.range_start = self.range_start
+        ret.range_end = self.range_end
         return ret
 
     def is_valid_value(self, x: float | Value) -> bool:

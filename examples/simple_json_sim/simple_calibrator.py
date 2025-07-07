@@ -6,6 +6,7 @@ from pathlib import Path
 from sklearn.metrics import mean_squared_error as sklearn_mean_squared_error
 
 import simcal as sc
+import simcal.exceptions
 from groundtruth import ground_truth
 
 simple_json_sim = Path(os.path.dirname(os.path.realpath(__file__)))
@@ -63,8 +64,8 @@ simulator = ExampleSimulator(ground_truth_data, loss)
 # prepare the calibrator and setup the arguments to calibrate with their ranges
 # calibrator = sc.calibrators.Grid()
 # calibrator = sc.calibrators.Random()
-# calibrator = sc.calibrators.ScikitOptimizer(1000)
-calibrator = sc.calibrators.GeneticAlgorithm(100,10,.50,.01)
+calibrator = sc.calibrators.ScikitOptimizer(1000)
+# calibrator = sc.calibrators.GeneticAlgorithm(100,10,.50,.01)
 
 calibrator.add_param("a", sc.parameter.Linear(0, 20).format("%.2f"))
 calibrator.add_param("b", sc.parameter.Linear(0, 8).format("%.2f"))
@@ -73,8 +74,12 @@ calibrator.add_param("d", sc.parameter.Linear(0, 6).format("%.2f"))
 
 coordinator = sc.coordinators.ThreadPool(pool_size=4)  # Making a coordinator is optional, and only needed if you
 # wish to run multiple simulations at once, possibly using multiple cpu cores or multiple compute nodes
-
-calibration, loss = calibrator.calibrate(simulator, timelimit=79200, coordinator=coordinator)
+try:
+    calibration, loss = calibrator.calibrate(simulator, timelimit=120, coordinator=coordinator)
+except simcal.exceptions.EarlyTermination as e:
+    print(e.result)
+    raise(e.exception)
+print(calibrator.timeline)
 print("final calibration")
 print(calibration)
 print("Expected")

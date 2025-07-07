@@ -1,49 +1,72 @@
+import time
 from typing import Self
 
 import simcal.coordinators.base as Coordinator
 import simcal.simulator as Simulator
 from simcal.parameters import Categorical, Value
 from simcal.parameters import Ordered
+from simcal.parameters import ParameterList
+from functools import wraps
+import simcal.exceptions as exception
 
 
 class Base(object):
     def __init__(self):
-        self._ordered_params = {}
-        self._categorical_params = {}
+        self._parameter_list = ParameterList()
+        self.timeline = []  # all best calibrations in order (up to _max_timeline to prevent memory issues)
+        self._max_timeline = 100000
+        self.current_best = None
+
+    def mark_calibration(self, calibration):
+        timestamp = int(time.time())
+        if len(self.timeline) > self._max_timeline:
+            self.timeline.pop(0)
+        self.timeline.append((timestamp, calibration))
+        self.current_best = calibration
 
     def calibrate(self, simulator: Simulator, early_stopping_loss: float | int | None = None,
                   iterations: int | None = None, timelimit: float | int | None = None,
-                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int],float]:
+                  coordinator: Coordinator.Base | None = None) -> tuple[dict[str, Value | float | int], float]:
 
         raise NotImplementedError(f"{self.__class__.__name__} does not define calibrate(self, simulator, "
                                   f"compute_loss, reference_data, iterations=None, timeout=None)")
 
     def add_param(self, name: str, parameter: Ordered | Categorical) -> Self:
-        """
-        Method to add a to-be-calibrated parameter
-        :param name: a user-defined parameter name
-        :param parameter: the parameter
-        :return: the calibrator
-        :rtype simcal.calibrator.Base
-        """
-        if name in self._ordered_params or name in self._categorical_params:
-            raise ValueError(f"Parameter {name} already exists")  # TODO: pick the correct error class
-        if isinstance(parameter, Ordered):
-            self._ordered_params[name] = parameter
-        else:
-            self._categorical_params[name] = parameter
+        self._parameter_list.add_param(name, parameter)
         return self
 
     def get_param(self, name: str) -> Ordered | Categorical | None:
-        """
-        Method to retrieve a parameter by  name
-        :param name: a user-defined parameter name
-        :return: the parameter
-        :rtype simcal.calibrator.Base
-        """
-        if name in self._ordered_params:
-            return self._ordered_params[name]
-        elif name in self._categorical_params:
-            return self._categorical_params[name]
-        else:
-            return None
+        return self._parameter_list.get_param(name)
+
+    def best_result(self, results):
+        best = None
+        best_loss = None
+        if self.current_best:
+            best, best_loss = self.current_best
+        for current, loss in results:
+            if loss is None:
+                continue
+            if best is None or loss < best_loss:
+                best = current
+                best_loss = loss
+                self.mark_calibration((best, best_loss))
+
+        self.current_best = best, best_loss
+        return best, best_loss
+
+    @staticmethod
+    def standard_exceptions(func):
+        @wraps(func)
+        def wrapper(self,*args, **kwargs):
+            try:
+                return func(self,*args, **kwargs)
+            except exception.Timeout:
+                return self.current_best
+            except exception.EarlyTermination as e:
+                ebest, eloss = e.result
+                if eloss is None or (self.current_best is not None and eloss > self.current_best[1]):
+                    e.result = self.current_best
+                raise e
+            except BaseException as e:
+                raise exception.EarlyTermination(self.current_best, e)
+        return wrapper
