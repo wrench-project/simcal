@@ -7,7 +7,7 @@ from numpy import linspace
 
 import simcal.coordinators.base as Coordinator
 import simcal.exceptions as exception
-import simcal.simulator as Simulator
+from simcal.simulator import Simulator
 from simcal.calibrators.base import Base as BaseCalibrator
 from simcal.parameters import Value
 

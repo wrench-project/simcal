@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy
 
-import simcal.simulator as Simulator
+from simcal.simulator import Simulator
 from simcal import parameter, exception
 from simcal.calibrators import Base as BaseCalibrator
 from simcal.calibrators.grid import _RectangularIterator

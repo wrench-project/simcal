@@ -2,7 +2,7 @@ import time
 from typing import Self
 
 import simcal.coordinators.base as Coordinator
-import simcal.simulator as Simulator
+from simcal.simulator import Simulator
 from simcal.parameters import Categorical, Value
 from simcal.parameters import Ordered
 from simcal.parameters import ParameterList
