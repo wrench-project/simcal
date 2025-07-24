@@ -9,7 +9,7 @@ from deephyper.problem import HpProblem
 import ConfigSpace as cs
 
 import simcal.calibrators as sc
-import simcal.simulator as Simulator
+from simcal.simulator import Simulator
 from simcal.parameters import Ordered, Categorical, Linear, Exponential
 
 from deephyper.evaluator.callback import Callback
