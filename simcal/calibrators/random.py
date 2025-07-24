@@ -2,7 +2,7 @@ import random
 from itertools import count
 from time import time
 import simcal.exceptions as exception
-import simcal.simulator as Simulator
+from simcal.simulator import Simulator
 
 from simcal.calibrators.base import Base as BaseCalibrator
 import simcal.coordinators.base as Coordinator
