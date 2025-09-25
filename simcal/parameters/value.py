@@ -97,85 +97,101 @@ class Value(json.JSONEncoder):
         ret.value = -self.value
         return ret
 
-    def __add__(self, other: int | float) -> float:
+    def __add__(self, other: int | float) -> Value:
         """
         Overloads the addition operator.
 
         :param int | float other: The value to add.
         :return: The result of addition.
-        :rtype: float
+        :rtype: Value
         """
-        return self.value + other
+        ret = copy(self)
+        ret.value += other
+        return ret
 
-    def __radd__(self, other: int | float) -> float:
+    def __radd__(self, other: int | float) -> Value:
         """
         Overloads the reverse addition operator.
 
         :param int | float other: The value to which the instance is added.
         :return: The result of addition.
-        :rtype: float
+        :rtype: Value
         """
-        return other + self.value
+        ret = copy(self)
+        ret.value = other + ret.value
+        return ret
 
-    def __sub__(self, other: int | float) -> float:
+    def __sub__(self, other: int | float) -> Value:
         """
         Overloads the subtraction operator.
 
         :param int | float other: The value to subtract.
         :return: The result of subtraction.
-        :rtype: float
+        :rtype: Value
         """
-        return self.value - other
+        ret = copy(self)
+        ret.value -= other
+        return ret
 
-    def __rsub__(self, other: int | float) -> float:
+    def __rsub__(self, other: int | float) -> Value:
         """
         Overloads the reverse subtraction operator.
 
         :param int | float other: The value from which the instance is subtracted.
         :return: The result of subtraction.
-        :rtype: float
+        :rtype: Value
         """
-        return other - self.value
+        ret = copy(self)
+        ret.value = other - ret.value
+        return ret
 
-    def __mul__(self, other: int | float) -> float:
+    def __mul__(self, other: int | float) -> Value:
         """
         Overloads the multiplication operator.
 
         :param int | float other: The value to multiply.
         :return: The result of multiplication.
-        :rtype: float
+        :rtype: Value
         """
-        return self.value * other
+        ret = copy(self)
+        ret.value *= other
+        return ret
 
-    def __rmul__(self, other: int | float) -> float:
+    def __rmul__(self, other: int | float) -> Value:
         """
         Overloads the reverse multiplication operator.
 
         :param int | float other: The value by which the instance is multiplied.
         :return: The result of multiplication.
-        :rtype: float
+        :rtype: Value
         """
-        return other * self.value
+        ret = copy(self)
+        ret.value = other * ret.value
+        return ret
 
-    def __truediv__(self, other: int | float) -> float:
+    def __truediv__(self, other: int | float) -> Value:
         """
         Overloads the division operator.
 
         :param int | float other: The value to divide by.
         :return: The result of division.
-        :rtype: float
+        :rtype: Value
         """
-        return self.value / other
+        ret = copy(self)
+        ret.value /= other
+        return ret
 
-    def __rtruediv__(self, other: int | float) -> float:
+    def __rtruediv__(self, other: int | float) -> Value:
         """
         Overloads the reverse division operator.
 
         :param int | float other: The value by which the instance is divided.
         :return: The result of division.
-        :rtype: float
+        :rtype: Value
         """
-        return other / self.value
+        ret = copy(self)
+        ret.value = other / ret.value
+        return ret
 
     def __eq__(self, other: int | float) -> bool:
         """

@@ -6,3 +6,4 @@
 examples/*/tmp*/
 /examples/shell_test/output
 .env
+.ipynb_checkpoints
