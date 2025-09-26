@@ -13,4 +13,4 @@ This package can be installed using `pip install .`.
 Alternatively, you can set it manually up in a virtual environment using the `setup.sh` script.
 
 # Example Usage
-The examples directory contains some examples of how to use the framework.  For a more in-dept walkthrough see [examples/walkthrough/walkthrough.html](examples/walkthrough/walkthrough.html) or download the [interactive jupyter notebook](examples/walkthrough/walkthrough.ipynb).
+The examples directory contains some examples of how to use the framework.  For a more in-dept walkthrough see [examples/walkthrough/walkthrough.md](examples/walkthrough/walkthrough.html) or download the [interactive jupyter notebook](examples/walkthrough/walkthrough.ipynb).
