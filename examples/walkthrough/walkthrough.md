@@ -33,7 +33,7 @@ Example Dir:
 Example 10_tasks_100_data.json:
 ```json
 {
-	"makespan":10s,
+	"makespan":"10s",
 	"tasks":10,
 	"data":100
 }
