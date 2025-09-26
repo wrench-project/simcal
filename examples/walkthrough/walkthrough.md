@@ -45,7 +45,7 @@ Example:
 {
 	"single_machine":{
 		"10_tasks_0_data":{
-			"makespan":10s,
+			"makespan":"10s",
 			"tasks":10,
 			"data":0
 		},...
