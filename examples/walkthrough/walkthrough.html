@@ -7518,8 +7518,8 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Simcal">Simcal<a class="anchor-link" href="#Simcal">¶</a></h1><p>Simcal is a simulation calibration framework designed to calibrate arbitrary simulators.  The simulator itself is defined outside of simcal and can be anything.  For the purposes of this walkthrough, we will assume the simulator is some other program that can be invoked from the command line and outputs a value.</p>
-<p>Simcal provides a Simulation wrapper that must be implemented to call this simulator.  This wrapper must return a scalar value representing the loss of the calibration.  It is helpful (but not required) for this to also be a function.</p>
-<p>The sklearn.metrics package provides many useful error functions that can be used.  For this example, we will use mean_squared_error</p>
+<p>Simcal provides a Simulation wrapper that must be implemented to call this simulator.  This wrapper must return a scalar value representing the loss of the calibration.  It is helpful (but not required) for the loss to be implemented as it own seperate function.</p>
+<p>The sklearn.metrics package provides many useful error functions that can be used as the loss function.  For this example, we will use <code>mean_squared_error</code>.</p>
 </div>
 </div>
 </div>
@@ -7531,8 +7531,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span> <span class="k">as</span> <span class="n">sklearn_mean_squared_error</span>
-<span class="kn">import</span> <span class="nn">simcal</span> <span class="k">as</span> <span class="nn">sc</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">mean_squared_error</span> <span class="k">as</span> <span class="n">sklearn_mean_squared_error</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">simcal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
 </pre></div>
 </div>
 </div>
@@ -7545,8 +7545,8 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Ground-Truth-data">Ground-Truth data<a class="anchor-link" href="#Ground-Truth-data">¶</a></h1><p>Simcal has no expectation for your ground-truth data.  It doesnt even assume it exists.  Some simulators can use another source for their accuracy.</p>
-<p>However, for our simulators, ground-truth data is needed for calibration.  We recommend this data is stored in a well structured directory of multiple scenarios and contain both the required arguments for the simulator a scenario to run and the expected output of a scenario.</p>
+<h1 id="Ground-Truth-data">Ground-Truth data<a class="anchor-link" href="#Ground-Truth-data">¶</a></h1><p>Simcal has no expectation for your ground-truth data.  It doesn't even assume it exists (some simulators can use some out-of-band source to quantify accuracy).</p>
+<p>However, for most simulators, ground-truth data is needed for calibration.  We recommend this data be stored in a well-structured directory of multiple scenarios and contain both the required arguments for the simulator to run a scenario and the expected output of a scenario.</p>
 <p>Example Dir:</p>
 <ul>
 <li>ground_truth<ul>
@@ -7620,7 +7620,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Simulator">Simulator<a class="anchor-link" href="#Simulator">¶</a></h1><p>Simcal provides an abstract <code>Simulator</code> class to extend for creating the wrapper.  The <code>run</code> method of this wrapper must have the signature  <code>run(self, env, args)</code> and return a scalar value.  The <code>__call__</code> method is reserved.  Otherwise the implementation of this class is up to the user.  For this example, we will define a simulator that takes the path to the simulator, a reference ground-truth dataset, and a functor to evaluate the loss.  The <code>run</code> function will run all scenarios given in the ground_truth, and then compute the loss over them.  The <code>run</code> function will be provided with a dictionary of formated parameter values to use in the <code>args</code> parameter.</p>
+<h1 id="Simulator">Simulator<a class="anchor-link" href="#Simulator">¶</a></h1><p>Simcal provides an abstract <code>Simulator</code> class to extend for creating the wrapper.  The <code>run</code> method of this wrapper must have the signature  <code>run(self, env, args)</code> and return a scalar value.  The <code>__call__</code> method is reserved.  Otherwise the implementation of this class is up to the user.  For this example, we will define a simulator that takes the path to the simulator, a reference ground-truth dataset, and a functor to evaluate the loss.  The <code>run</code> function will run all scenarios given in <code>ground_truth</code>, and then compute the loss over them.  The <code>run</code> function will be provided, in the <code>args</code> parameter, with a dictionary of formated parameter values to use.</p>
 </div>
 </div>
 </div>
@@ -7632,8 +7632,8 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">ExampleSimulator</span><span class="p">(</span><span class="n">sc</span><span class="o">.</span><span class="n">Simulator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator_path</span><span class="p">,</span> <span class="n">ground_truth</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">ExampleSimulator</span><span class="p">(</span><span class="n">sc</span><span class="o">.</span><span class="n">Simulator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulator_path</span><span class="p">,</span> <span class="n">ground_truth</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simulator_path</span> <span class="o">=</span> <span class="n">simulator_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ground_truth</span> <span class="o">=</span> <span class="n">ground_truth</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span>
@@ -7642,7 +7642,7 @@ a.anchor-link {
     <span class="c1">#     "network_speed":ParameterValue,</span>
     <span class="c1">#     "cpu_speed":ParameterValue</span>
     <span class="c1"># }</span>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="n">result</span><span class="o">=</span><span class="p">[]</span>
         <span class="n">makespans</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">for</span> <span class="n">machine_count</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ground_truth</span><span class="p">:</span>
@@ -7653,7 +7653,7 @@ a.anchor-link {
                                                        <span class="s2">"--data"</span><span class="p">,</span><span class="n">gtdata</span><span class="p">[</span><span class="s2">"data"</span><span class="p">],</span> 
                                                        <span class="s2">"--network"</span><span class="p">,</span><span class="n">args</span><span class="p">[</span><span class="s2">"network_speed"</span><span class="p">],</span>
                                                        <span class="s2">"--cpu"</span><span class="p">,</span><span class="n">args</span><span class="p">[</span><span class="s2">"cpu_speed"</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">std_err</span><span class="p">:</span> <span class="c1"># This if is not required, but is helpful for debugging simulators, be ware of printing large outputs</span>
+                <span class="k">if</span> <span class="n">std_err</span><span class="p">:</span> <span class="c1"># This if is not required, but is helpful for debugging simulators, beware of printing large outputs</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">gtdata</span><span class="p">,</span> <span class="n">std_out</span><span class="p">,</span> <span class="n">std_err</span><span class="p">,</span> <span class="n">exit_code</span><span class="p">)</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error running simulator"</span><span class="p">)</span> <span class="c1"># any normal exception raised in the run function will cause the calibration process to stop</span>
                 <span class="n">resutls</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">std_dout</span><span class="p">))</span>
@@ -7686,7 +7686,7 @@ a.anchor-link {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Parameter-Values">Parameter Values<a class="anchor-link" href="#Parameter-Values">¶</a></h1><p>Parameter Values are given to the <code>run</code> function in various formats depending on how they are configured.  Most often, they are provided as numeric values with a format in a <code>sc.parameter.Value</code>.  These support arithmetic options as if they are numbers, but will automatically attach a unit when cast to a string, jsonified, or passed to <code>env.bash</code>.  They can be used to access the base parameter distribution they originate from if required allowing them to carry additional metadata.</p>
+<h1 id="Parameter-Values">Parameter Values<a class="anchor-link" href="#Parameter-Values">¶</a></h1><p>Parameter Values are given to the <code>run</code> function in various formats depending on how they are configured.  Most often, they are provided as numeric values with a format in a <code>sc.parameter.Value</code>.  These support arithmetic options as if they were numbers, but will automatically attach a unit when cast to a string, jsonified, or passed to <code>env.bash</code>.  They can be used to access the base parameter distribution they originate from, if required, allowing them to carry additional metadata.</p>
 </div>
 </div>
 </div>
@@ -7738,8 +7738,8 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Calibrator">Calibrator<a class="anchor-link" href="#Calibrator">¶</a></h1><p>Simcal provides a standard calibration wrapper for various optimization algorithms to implement.
 How this wrapper is instantiated is up to the algorithm implementer, but each has a
-<code>calibrate(self, simulator, early_stopping_loss = None, iterations = None, timelimit = None, coordinator = None)</code> method to get a calibration and <code>add_param(self, parameter_name, parameter)</code> method to add parameters.</p>
-<p>Currently Simcal provides implementations for Gradient descent, 4 skopt baysian optimization implementations, random search, grid search, genetic algorithms, and a fake "debug"</p>
+<code>calibrate(self, simulator, early_stopping_loss = None, iterations = None, timelimit = None, coordinator = None)</code> method to compute a calibration and <code>add_param(self, parameter_name, parameter)</code> method to add parameters.</p>
+<p>Currently Simcal provides implementations for Gradient descent, 4 Skopt baysian optimization implementations, random search, grid search, genetic algorithms, and a do-nothing "debug".</p>
 </div>
 </div>
 </div>
@@ -7784,23 +7784,23 @@ How this wrapper is instantiated is up to the algorithm implementer, but each ha
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Parameters">Parameters<a class="anchor-link" href="#Parameters">¶</a></h1><p>To calibrate the parameters of a simulator, the parameters to calibrate and the range of values for each must be specified to the calibrator.
-the <code>add_param(name,parameter)</code> function allows for adding a parameter to a calibrator.  Each parameter must have a unique name.</p>
+The <code>add_param(name,parameter)</code> function allows for adding a parameter to a calibrator.  Each parameter must have a unique name.</p>
 <p>Simcal supports several types of parameters</p>
 <ul>
 <li><p><code>Categorical</code>
 Categorical parameters are sets of strings with no order.</p>
 </li>
 <li><p><code>Ordered</code>
-Abstract Parameter with an order</p>
+Abstract Parameter with an order.</p>
 </li>
 <li><p><code>Ordinal</code>
-Ordinal parameters are discrete sets of numeric values with order</p>
+Ordinal parameters are discrete sets of numeric values with order.</p>
 </li>
 <li><p><code>Linear</code>
-Linear parameters are a range of values with a linear distribution, may be integer or float</p>
+Linear parameters are a range of values with a linear distribution, may be integer or float.</p>
 </li>
 <li><p><code>Exponential</code>
-Linear parameters are a range of values with a exponential distribution, may be integer or float</p>
+Linear parameters are a range of values with a exponential distribution, may be integer or float.</p>
 </li>
 </ul>
 <p>All Parameters allow for metadata to better inform the simulator how to use them.</p>
@@ -7858,27 +7858,17 @@ Linear parameters are a range of values with a exponential distribution, may be 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=769cb4a2-d9af-4478-a092-60a98bc4c6ff">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=769cb4a2-d9af-4478-a092-60a98bc4c6ff">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="n">calibrator</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span><span class="s2">"network_speed"</span><span class="p">,</span><span class="n">sc</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Exponential</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"</span><span class="si">%.2f</span><span class="s2">bps"</span><span class="p">))</span> 
 <span class="n">calibrator</span><span class="o">.</span><span class="n">add_param</span><span class="p">(</span><span class="s2">"cpu_speed"</span><span class="p">,</span><span class="n">sc</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Exponential</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">"</span><span class="si">%.2f</span><span class="s2">flops"</span><span class="p">))</span> 
 </pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
 </div>
 </div>
 </div>
@@ -7890,7 +7880,7 @@ Linear parameters are a range of values with a exponential distribution, may be 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Once the calibration algorithm has been instantiated, the simulator created, and the parameters added, the the calibrator can be ran using the <code>calibrate</code> method.  It will return the best calibration found and the loss value of the best.  Additionally, a history of best calibrations is tracked and stored in the <code>calibrator.timeline</code> array if needed</p>
+<p>Once the calibration algorithm has been instantiated, the simulator created, and the parameters added, then the calibrator can be ran using the <code>calibrate</code> method.  This method will return the best calibration found and the corresponding loss value.  Additionally, a history of best calibrations is tracked and stored in the <code>calibrator.timeline</code> array.</p>
 </div>
 </div>
 </div>
@@ -7916,7 +7906,7 @@ Linear parameters are a range of values with a exponential distribution, may be 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="Coordinators">Coordinators<a class="anchor-link" href="#Coordinators">¶</a></h1><p>To improve calibraton performance, Simcal also provides a Coordinator wrapper for parallel and distributed calibration.  Currently only the trivial default coordinator and a ThreadPool have been implemented.  This allows for optimization algorithms to use multiple cpu cores on the same machine.  This can be passed to <code>calibrator.calibrate</code> if desired</p>
+<h1 id="Coordinators">Coordinators<a class="anchor-link" href="#Coordinators">¶</a></h1><p>To improve calibraton performance, Simcal also provides a Coordinator wrapper for parallel and distributed calibration.  Currently only the trivial default coordinator and a ThreadPool have been implemented.  This allows for optimization algorithms to use multiple CPU cores on the same machine.  A Coordinator can be passed to <code>calibrator.calibrate</code> if desired.</p>
 </div>
 </div>
 </div>

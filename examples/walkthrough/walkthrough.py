@@ -4,9 +4,9 @@
 # # Simcal
 # Simcal is a simulation calibration framework designed to calibrate arbitrary simulators.  The simulator itself is defined outside of simcal and can be anything.  For the purposes of this walkthrough, we will assume the simulator is some other program that can be invoked from the command line and outputs a value.
 # 
-# Simcal provides a Simulation wrapper that must be implemented to call this simulator.  This wrapper must return a scalar value representing the loss of the calibration.  It is helpful (but not required) for this to also be a function.
+# Simcal provides a Simulation wrapper that must be implemented to call this simulator.  This wrapper must return a scalar value representing the loss of the calibration.  It is helpful (but not required) for the loss to be implemented as it own seperate function.
 # 
-# The sklearn.metrics package provides many useful error functions that can be used.  For this example, we will use mean_squared_error
+# The sklearn.metrics package provides many useful error functions that can be used as the loss function.  For this example, we will use `mean_squared_error`.
 
 # In[1]:
 
@@ -16,9 +16,9 @@ import simcal as sc
 
 
 # # Ground-Truth data
-# Simcal has no expectation for your ground-truth data.  It doesnt even assume it exists.  Some simulators can use another source for their accuracy.
+# Simcal has no expectation for your ground-truth data.  It doesn't even assume it exists (some simulators can use some out-of-band source to quantify accuracy).
 # 
-# However, for our simulators, ground-truth data is needed for calibration.  We recommend this data is stored in a well structured directory of multiple scenarios and contain both the required arguments for the simulator a scenario to run and the expected output of a scenario.
+# However, for most simulators, ground-truth data is needed for calibration.  We recommend this data be stored in a well-structured directory of multiple scenarios and contain both the required arguments for the simulator to run a scenario and the expected output of a scenario.
 # 
 # Example Dir:
 # * ground_truth
@@ -72,7 +72,7 @@ ground_truth=ground_truth_loader("path/to/ground_truth")
 
 
 # # Simulator
-# Simcal provides an abstract `Simulator` class to extend for creating the wrapper.  The `run` method of this wrapper must have the signature  `run(self, env, args)` and return a scalar value.  The ``__call__`` method is reserved.  Otherwise the implementation of this class is up to the user.  For this example, we will define a simulator that takes the path to the simulator, a reference ground-truth dataset, and a functor to evaluate the loss.  The `run` function will run all scenarios given in the ground_truth, and then compute the loss over them.  The `run` function will be provided with a dictionary of formated parameter values to use in the `args` parameter.
+# Simcal provides an abstract `Simulator` class to extend for creating the wrapper.  The `run` method of this wrapper must have the signature  `run(self, env, args)` and return a scalar value.  The ``__call__`` method is reserved.  Otherwise the implementation of this class is up to the user.  For this example, we will define a simulator that takes the path to the simulator, a reference ground-truth dataset, and a functor to evaluate the loss.  The `run` function will run all scenarios given in `ground_truth`, and then compute the loss over them.  The `run` function will be provided, in the `args` parameter, with a dictionary of formated parameter values to use.
 # 
 
 # In[ ]:
@@ -99,7 +99,7 @@ class ExampleSimulator(sc.Simulator):
                                                        "--data",gtdata["data"], 
                                                        "--network",args["network_speed"],
                                                        "--cpu",args["cpu_speed"])
-                if std_err: # This if is not required, but is helpful for debugging simulators, be ware of printing large outputs
+                if std_err: # This if is not required, but is helpful for debugging simulators, beware of printing large outputs
                     print(gtdata, std_out, std_err, exit_code)
                     raise Exception(f"Error running simulator") # any normal exception raised in the run function will cause the calibration process to stop
                 resutls.add(float(std_dout))
@@ -114,7 +114,7 @@ loss = simulator({"network_speed":"100Mbps", "cpu_speed":"1Gflops"})
 # `env` provides an environment unique to each invocation of `run`.  It provides many useful features such as temporary file and directory handling, as well as a bash function.  If your simulator requires input files for some of its arguments `open_file=env.tmp_file()` will create a temporary file to write it to, and if your simulator produces functions as outputs `env.tmp_dir()` will make a temporary folder for `env.bash` to use as a cwd.
 
 # # Parameter Values
-# Parameter Values are given to the `run` function in various formats depending on how they are configured.  Most often, they are provided as numeric values with a format in a `sc.parameter.Value`.  These support arithmetic options as if they are numbers, but will automatically attach a unit when cast to a string, jsonified, or passed to `env.bash`.  They can be used to access the base parameter distribution they originate from if required allowing them to carry additional metadata.
+# Parameter Values are given to the `run` function in various formats depending on how they are configured.  Most often, they are provided as numeric values with a format in a `sc.parameter.Value`.  These support arithmetic options as if they were numbers, but will automatically attach a unit when cast to a string, jsonified, or passed to `env.bash`.  They can be used to access the base parameter distribution they originate from, if required, allowing them to carry additional metadata.
 
 # In[5]:
 
@@ -134,9 +134,9 @@ print(parameter) # 5.0Mbps
 # # Calibrator
 # Simcal provides a standard calibration wrapper for various optimization algorithms to implement.
 # How this wrapper is instantiated is up to the algorithm implementer, but each has a 
-# `calibrate(self, simulator, early_stopping_loss = None, iterations = None, timelimit = None, coordinator = None)` method to get a calibration and `add_param(self, parameter_name, parameter)` method to add parameters.
+# `calibrate(self, simulator, early_stopping_loss = None, iterations = None, timelimit = None, coordinator = None)` method to compute a calibration and `add_param(self, parameter_name, parameter)` method to add parameters.
 # 
-# Currently Simcal provides implementations for Gradient descent, 4 skopt baysian optimization implementations, random search, grid search, genetic algorithms, and a fake "debug"
+# Currently Simcal provides implementations for Gradient descent, 4 Skopt baysian optimization implementations, random search, grid search, genetic algorithms, and a do-nothing "debug".
 
 # In[2]:
 
@@ -165,7 +165,7 @@ calibrator = sc.calibrators.GradientDescent(0.1, # initial step size for calcula
 
 # # Parameters
 # To calibrate the parameters of a simulator, the parameters to calibrate and the range of values for each must be specified to the calibrator.
-# the `add_param(name,parameter)` function allows for adding a parameter to a calibrator.  Each parameter must have a unique name.
+# The `add_param(name,parameter)` function allows for adding a parameter to a calibrator.  Each parameter must have a unique name.
 # 
 # Simcal supports several types of parameters
 # 
@@ -173,16 +173,16 @@ calibrator = sc.calibrators.GradientDescent(0.1, # initial step size for calcula
 # Categorical parameters are sets of strings with no order.
 # 
 # * `Ordered`
-# Abstract Parameter with an order
+# Abstract Parameter with an order.
 # 
 # * `Ordinal`
-# Ordinal parameters are discrete sets of numeric values with order
+# Ordinal parameters are discrete sets of numeric values with order.
 # 
 # * `Linear`
-# Linear parameters are a range of values with a linear distribution, may be integer or float
+# Linear parameters are a range of values with a linear distribution, may be integer or float.
 # 
 # * `Exponential`
-# Linear parameters are a range of values with a exponential distribution, may be integer or float
+# Linear parameters are a range of values with a exponential distribution, may be integer or float.
 # 
 # All Parameters allow for metadata to better inform the simulator how to use them.
 # 
@@ -211,14 +211,14 @@ print(exponential.from_normalized(0.75)) # 32768.00
 print(exponential_integer.from_normalized(0.75)) #32768
 
 
-# In[3]:
+# In[ ]:
 
 
 calibrator.add_param("network_speed",sc.parameter.Exponential(0, 20).format("%.2fbps")) 
 calibrator.add_param("cpu_speed",sc.parameter.Exponential(0, 20).format("%.2fflops")) 
 
 
-# Once the calibration algorithm has been instantiated, the simulator created, and the parameters added, the the calibrator can be ran using the `calibrate` method.  It will return the best calibration found and the loss value of the best.  Additionally, a history of best calibrations is tracked and stored in the `calibrator.timeline` array if needed
+# Once the calibration algorithm has been instantiated, the simulator created, and the parameters added, then the calibrator can be ran using the `calibrate` method.  This method will return the best calibration found and the corresponding loss value.  Additionally, a history of best calibrations is tracked and stored in the `calibrator.timeline` array. 
 
 # In[ ]:
 
@@ -228,7 +228,7 @@ calibrator.timeline
 
 
 # # Coordinators
-# To improve calibraton performance, Simcal also provides a Coordinator wrapper for parallel and distributed calibration.  Currently only the trivial default coordinator and a ThreadPool have been implemented.  This allows for optimization algorithms to use multiple cpu cores on the same machine.  This can be passed to `calibrator.calibrate` if desired
+# To improve calibraton performance, Simcal also provides a Coordinator wrapper for parallel and distributed calibration.  Currently only the trivial default coordinator and a ThreadPool have been implemented.  This allows for optimization algorithms to use multiple CPU cores on the same machine.  A Coordinator can be passed to `calibrator.calibrate` if desired.
 # 
 
 # In[ ]:
