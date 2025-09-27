@@ -4,16 +4,17 @@
 # About
 Simcal is a simulation calibration framework for calibrating arbitrary simulators using arbitrary optimization algorithms.
 
-Simcal provides a `Simulator` wrapper that provides a standardized way for a calibrator to call an arbitrary simulator.  This wrapper takes a parameter to run the simulator with, and then returns a value representing the quality of that set of parameters.  Generally this is based on the loss compared to some Ground-truth data, but the details are left to the implementer.
+Simcal provides a `Simulator` wrapper that provides a standardized way to invoke an arbitrary simulator.  This wrapper takes a set of parameter values that instantiate the simulator's behavior, invokes the instantiated simulator one one or more input, and then returns a value that represents the simulation accuracy/quality that was achieved using these parameter values.  This value is typically based on some notion of loss when compared to some ground-truth data (the details of which are left to the implementer).
 
-Simcal also provides a `Calibrator` class that can be used to implement a calibration algorithm.  This Calibrator is expected to call the provided `Simulator` several times with different parameter values and return the parameters with the best simulator quality (lowest loss).  Calibrators are expected to use the provided Parameter to determine the range and distribution for each parameter to provide to the `Simulator`.
+Simcal also provides a `Calibrator` class that can be used to calibrate a simulator using some optimization algorithm.  A `Calibrator` is expected to call a `Simulator` wrapper several times with different parameter values and return the parameter values that lead to the best results (lowest loss).  A calibrator is provided specifications that, for each `Parameter`, define a type, a value range, and  a distribution.
 
-Additionally simcal provides helpful utilities for parallelizing the calibration process such as an `Environment` for managing temporary files and a `Coordinator` for managing parallelism.
+Additionally Simcal provides helpful utilities, such as an `Environment` for managing temporary files and command-line invocations, and a `Coordinator` for managing parallelism.
 
 
 # Installation instructions
+
 This package can be installed using `pip install .`.
 Alternatively, you can set it manually up in a virtual environment using the `setup.sh` script.
 
 # Example Usage
-The examples directory contains some examples of how to use the framework.  For a more in-dept walkthrough see [examples/walkthrough/walkthrough.md](examples/walkthrough/walkthrough.md) or download the [interactive jupyter notebook](examples/walkthrough/walkthrough.ipynb).
+The `examples/` directory contains examples simulators and calibrators for these simulators. A complete walkthrough is provided in [examples/walkthrough/walkthrough.md](examples/walkthrough/walkthrough.md), and can be downloaded as an [interactive jupyter notebook](examples/walkthrough/walkthrough.ipynb).
