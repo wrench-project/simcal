@@ -29,7 +29,7 @@ class ThreadPool(BaseCoordinator):
             kwds = {}
         while True:
             with self.managementLock:
-                if len(self.handles) < self.pool_size:
+                if len(self.handles) < self.pool_size*2:# *2 helps ensure no idle workers 
                     break
             with self.pool_full:
                 self.pool_full.wait()
